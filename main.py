@@ -1,10 +1,8 @@
 import sys
 import pygame
-import random
-import numpy as np
 import enum
-from time import sleep
 from defined_games import Evens
+from hero import Hero
 
 from pygame.locals import (
     RLEACCEL,
@@ -22,7 +20,6 @@ from pygame.locals import (
 BLACK = (0, 0, 0)
 WHITE = (255, 255, 255)
 PURPLE = (180, 0, 180)
-GREEN = (0, 255, 0)
 
 
 class GameType(enum.Enum):
@@ -57,7 +54,7 @@ clock = pygame.time.Clock()
 # pygame.time.set_timer(ADDCLOUD, 1000)
 
 
-def get_game_type(game="Evens", level=1):
+def get_game_type(game=GameType.evens, level=1):
     return Evens(level=level)
 
 
@@ -130,80 +127,6 @@ def show_game_over(scrn):
                 sys.exit()
 
 
-class Hero(pygame.sprite.Sprite):
-    def __init__(self, display=screen, shape=(5, 6)):
-        super(Hero, self).__init__()
-        self.surf = pygame.Surface((80, 80))
-        self.rect = self.surf.get_rect()
-        self.surf.fill(GREEN)
-        self.screen = display
-        self.grid = np.zeros(shape=shape)
-        self.x = shape[1] // 2
-        self.y = shape[0] // 2
-        self.rect.left = grid_x_start + (self.x * col_width) + (col_width - self.rect.w) // 2
-        self.rect.top = grid_y_start + (self.y * row_height) + (row_height - self.rect.h) // 2
-
-    def update_position(self, pressed_keys):
-        delta_x, delta_y = 0, 0
-        if pressed_keys[pygame.K_UP]:
-            delta_y = -1
-        if pressed_keys[pygame.K_DOWN]:
-            delta_y = 1
-        if pressed_keys[pygame.K_LEFT]:
-            delta_x = -1
-        if pressed_keys[pygame.K_RIGHT]:
-            delta_x = 1
-
-        # Keep player on the screen
-        if (self.x + delta_x) < 0:
-            delta_x = 0
-        if (self.x + delta_x) >= self.grid.shape[1]:
-            delta_x = 0
-        if (self.y + delta_y) < 0:
-            delta_y = 0
-        if (self.y + delta_y) >= self.grid.shape[0]:
-            delta_y = 0
-
-        self.move_to(delta_x, delta_y)
-        self.x += delta_x
-        self.y += delta_y
-
-    def move_to(self, x, y):
-        _x = x * col_width
-        _y = y * row_height
-        self.rect.move_ip(_x, _y)
-
-
-def generate_grid(game_type=GameType.evens, level=1, rows_cols=(5, 6)):
-    if game_type == GameType.odds or game_type == GameType.evens:
-        return generate_odds_or_evens_grid(level, rows_cols)
-    else:
-        return np.random.randint(100, size=rows_cols)
-
-
-def generate_odds_or_evens_grid(level=1, grid_size=(5, 6)):
-    low = 0
-    high = (10 * level) + 1
-    return np.random.randint(low, high, size=grid_size)
-
-
-def munch_number(game_type, hero, grid):
-    game_over = False
-    cell_value = grid[hero.y, hero.x]
-    grid[hero.y, hero.x] = -1
-    msg = ""
-    if game_type == GameType.odds:
-        if cell_value % 2 == 0:
-            game_over = True
-            msg = f"Look again! {cell_value} is not an odd number."
-    elif game_type == GameType.evens:
-        if cell_value % 2 == 1:
-            game_over = True
-            msg = f"Look again! {cell_value} is not an even number."
-
-    return game_over, msg
-
-
 def display_error_message(msg):
     left = grid_x_start
     top = grid_y_start + 2 * row_height
@@ -225,6 +148,11 @@ def display_error_message(msg):
     screen.blit(cell_surf, (left + (bgrnd_width - cell_surf.get_width()) / 2, top + (bgrnd_height - cell_surf.get_height()) / 2))
     pygame.display.update()
 
+    while True:
+        for event in pygame.event.get():
+            if event.type == KEYDOWN or event.type == QUIT:
+                return
+
 
 def main():
     game_over = False
@@ -233,11 +161,11 @@ def main():
 
     # Hard code Level 5 evens
     level = 5
-    game_type = GameType.evens
-    grid = generate_grid(game_type, level)
+    game = get_game_type(GameType.evens, level=1)
+    grid = game.grid
     draw_grid(screen, grid)
 
-    hero = Hero()
+    hero = Hero(display=screen, shape=game.grid.shape)
     # enemies = pygame.sprite.Group()
 
     all_sprites = pygame.sprite.Group()
@@ -248,11 +176,12 @@ def main():
         for event in pygame.event.get():
 
             if event.type == KEYDOWN:
-                if event.key == K_ESCAPE:
+                if event.key == K_ESCAPE or event.key == QUIT:
                     running = False
+
                 elif event.key == K_SPACE:
-                    game_over, msg = munch_number(game_type, hero, grid)
-                    if game_over:
+                    game.munch_number(hero.x, hero.y)
+                    if game.gameover is True:
                         running = False
 
                 pressed_keys = pygame.key.get_pressed()
@@ -263,7 +192,7 @@ def main():
                 running = False
 
         screen.blit(hero.surf, hero.rect)
-        draw_grid(screen, grid)
+        draw_grid(screen, game.grid)
 
         pygame.display.flip()
 
@@ -271,13 +200,12 @@ def main():
         clock.tick(20)
         # Wait for user to press any key to continue
 
-    if game_over:
-        display_error_message(msg)
+    if game.gameover:
+        if game.did_i_win():
+            print("I did win!!!")
+        else:
+            display_error_message(game.message)
 
-    while True:
-        for event in pygame.event.get():
-            if event.type == KEYDOWN:
-                return
     show_game_over(screen)
 
 
@@ -285,5 +213,12 @@ main()
 
 
 # TODO:
-# check for win condidtions
-# Create GameType class
+# Show win screen
+# Increase Level
+# Show Level
+# Add Multiples GameType
+# Show Score
+# Add Enemy
+# Add Lives (Like 3 Lives)
+# Draw Hero
+# Draw Enemy

@@ -1,8 +1,9 @@
 import sys
 import pygame
-import enum
-from defined_games import Evens
+import time
+from defined_games import get_game
 from hero import Hero
+from game_menu import show_menu_screen
 
 from pygame.locals import (
     RLEACCEL,
@@ -20,13 +21,9 @@ from pygame.locals import (
 BLACK = (0, 0, 0)
 WHITE = (255, 255, 255)
 PURPLE = (180, 0, 180)
-
-
-class GameType(enum.Enum):
-    odds = 1
-    evens = 2
-    multiples = 3
-    factors = 4
+BLUE = (0, 0, 255)
+RED = (255, 0, 0)
+ORANGE = (255, 105, 0)
 
 
 pygame.init()
@@ -42,8 +39,6 @@ grid_x_start = col_width = grid_y_start = row_height = 0
 
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 screen.fill(BLACK)
-
-current_score = 0
 clock = pygame.time.Clock()
 
 
@@ -52,10 +47,6 @@ clock = pygame.time.Clock()
 # pygame.time.set_timer(ADDENEMY, 250)
 # ADDCLOUD = pygame.USEREVENT + 2
 # pygame.time.set_timer(ADDCLOUD, 1000)
-
-
-def get_game_type(game=GameType.evens, level=1):
-    return Evens(level=level)
 
 
 def draw_grid(screen, grid):
@@ -96,11 +87,57 @@ def draw_grid(screen, grid):
             screen.blit(cell_surf, cell_rect)
 
 
-def reset_game():
-    global current_score
-    # pygame.mixer.music.load("Apoxode_-_Electric_1.mp3")
-    # pygame.mixer.music.play(loops=-1)
-    current_score = 0
+def show_level(scrn, level):
+    """Show level on main screen above the game grid"""
+    lvl_y = 50
+    lvl_x = 20
+
+    _font = pygame.font.SysFont("Courier New", 32)
+    _surf = _font.render(f"Level: {level:2}", True, WHITE)
+    scrn.blit(_surf, (lvl_x, lvl_y))
+
+
+def show_title(scrn, title_txt):
+    """Show Title above game grid (i.e. Multiples of 2)"""
+    thickness = 3
+    title_padding = 4
+    title_height = 40
+    top_y = 40
+    bottom_y = top_y + title_height + (4 * title_padding)
+
+    # Get Title and title width to center title
+    start_from = scrn.get_width() // 3
+    line_w = int(scrn.get_width() // 2)
+    top_line = pygame.draw.line(scrn, ORANGE, (start_from, top_y), (start_from + line_w, top_y), thickness)
+    bottom_line = pygame.draw.line(scrn, ORANGE, (start_from, bottom_y), (start_from + line_w, bottom_y), thickness)
+
+    _font = pygame.font.SysFont("Courier New", 48)
+    _surf = _font.render(title_txt, True, WHITE)
+    w = _surf.get_width()
+    _x = start_from + ((line_w - w) // 2)
+    scrn.blit(_surf, (_x, top_y + title_padding))
+
+
+def show_score(scrn, score):
+    """Show score underneath the game grid."""
+    score_txt_y = 500 + grid_y_start + 20
+    score_txt_x = 20
+
+    _font = pygame.font.SysFont("Courier New", 36)
+    _surf = _font.render("Score:  ", True, WHITE)
+    scrn.blit(_surf, (score_txt_x, score_txt_y))
+
+    score_box = _font.render(f"{score:5} ", True, WHITE, BLACK)
+
+    # thickness of border
+    border = 4
+    bgrnd = pygame.Surface((score_box.get_width() + (2 * border), score_box.get_height() + (2 * border)))
+    bgrnd.fill(BLACK)
+    rect = bgrnd.get_rect()
+    pygame.draw.rect(bgrnd, BLUE, rect, border)
+
+    screen.blit(bgrnd, (score_txt_x + _surf.get_width() - border, score_txt_y - border))
+    scrn.blit(score_box, (score_txt_x + _surf.get_width(), score_txt_y))
 
 
 def show_game_over(scrn):
@@ -127,7 +164,7 @@ def show_game_over(scrn):
                 sys.exit()
 
 
-def display_error_message(msg):
+def display_message(msg):
     left = grid_x_start
     top = grid_y_start + 2 * row_height
     bgrnd_width = col_width * 6
@@ -145,23 +182,30 @@ def display_error_message(msg):
     # display black background in middle of grid
     screen.blit(bgrnd, (left, top))
     # display message centered on top of bgrnd
-    screen.blit(cell_surf, (left + (bgrnd_width - cell_surf.get_width()) / 2, top + (bgrnd_height - cell_surf.get_height()) / 2))
+    screen.blit(cell_surf,
+                (left + (bgrnd_width - cell_surf.get_width()) / 2, top + (bgrnd_height - cell_surf.get_height()) / 2))
     pygame.display.update()
 
-    while True:
-        for event in pygame.event.get():
-            if event.type == KEYDOWN or event.type == QUIT:
-                return
+
+def display_completed_level():
+    for i in range(9):
+        screen.fill(BLUE)
+        display_message("Good Job!")
+        pygame.display.flip()
+        clock.tick(9)
+        screen.fill(PURPLE)
+        display_message("Good Job!")
+        pygame.display.flip()
+        clock.tick(9)
 
 
 def main():
-    game_over = False
-    msg = ""
     pygame.display.set_caption("MuRrAy MuNcHeRs!")
 
+    chosen_game = show_menu_screen(screen)
+
     # Hard code Level 5 evens
-    level = 5
-    game = get_game_type(GameType.evens, level=1)
+    game = get_game(chosen_game)
     grid = game.grid
     draw_grid(screen, grid)
 
@@ -172,12 +216,20 @@ def main():
     all_sprites.add(hero)
     running = True
     while running:
+
+        if game.beat_level():
+            display_completed_level()
+            game.start_next_level()
+
         screen.fill(BLACK)
+        show_level(screen, game.level)
+        show_title(screen, game.level_title)
         for event in pygame.event.get():
 
             if event.type == KEYDOWN:
                 if event.key == K_ESCAPE or event.key == QUIT:
                     running = False
+                    sys.exit()
 
                 elif event.key == K_SPACE:
                     game.munch_number(hero.x, hero.y)
@@ -192,6 +244,7 @@ def main():
                 running = False
 
         screen.blit(hero.surf, hero.rect)
+        show_score(screen, game.score)
         draw_grid(screen, game.grid)
 
         pygame.display.flip()
@@ -201,24 +254,25 @@ def main():
         # Wait for user to press any key to continue
 
     if game.gameover:
-        if game.did_i_win():
+        if game.beat_level():
             print("I did win!!!")
         else:
-            display_error_message(game.message)
+            display_message(game.message)
+            time.sleep(3)
 
     show_game_over(screen)
 
 
 main()
 
-
 # TODO:
-# Show win screen
-# Increase Level
-# Show Level
+# Add Game Grid Header i.e. ("Multiples of 2")
+# Show game win screen
 # Add Multiples GameType
-# Show Score
+# Add menu to choose Game Type
+# Refactor hard-coded stuff inside hero.py
 # Add Enemy
 # Add Lives (Like 3 Lives)
 # Draw Hero
 # Draw Enemy
+# Add plumbing

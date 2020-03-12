@@ -7,7 +7,7 @@ class GameType(enum.Enum):
     Odds = 1
     Evens = 2
     Multiples = 3
-    factors = 4
+    Factors = 4
 
 
 def get_game(game_type, level=1):

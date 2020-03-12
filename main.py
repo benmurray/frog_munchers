@@ -4,6 +4,7 @@ import time
 from defined_games import get_game
 from hero import Hero
 from game_menu import show_menu_screen
+from colors import BLACK, WHITE, PURPLE, BLUE, ORANGE
 
 from pygame.locals import (
     RLEACCEL,
@@ -17,16 +18,8 @@ from pygame.locals import (
     KEYDOWN,
     QUIT,
 )
-
-BLACK = (0, 0, 0)
-WHITE = (255, 255, 255)
-PURPLE = (180, 0, 180)
-BLUE = (0, 0, 255)
-RED = (255, 0, 0)
-ORANGE = (255, 105, 0)
-
-
 pygame.init()
+
 SCREEN_WIDTH = 1024
 SCREEN_HEIGHT = 768
 grid_x_start = col_width = grid_y_start = row_height = 0

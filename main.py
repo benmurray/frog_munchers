@@ -150,11 +150,9 @@ def show_game_over(scrn):
     scrn.blit(_surf, _rect)
     scrn.blit(_qinstr, _qrect)
     pygame.display.flip()
-    while True:
-        for event in pygame.event.get():
-            if event.type == KEYDOWN:
-                pygame.quit()
-                sys.exit()
+    pygame.display.update()
+    wait_for_any_key()
+    show_menu_screen(scrn)
 
 
 def display_message(msg):
@@ -192,13 +190,26 @@ def display_completed_level():
         clock.tick(9)
 
 
-def main():
+def wait_for_any_key():
+    time.sleep(1)
+    waiting = True
+    while waiting:
+
+        for event in pygame.event.get():
+
+            if event.type == KEYDOWN:
+                waiting = False
+
+    return
+
+def main(lives=3):
     pygame.display.set_caption("MuRrAy MuNcHeRs!")
 
     chosen_game = show_menu_screen(screen)
 
     # Hard code Level 5 evens
     game = get_game(chosen_game)
+    game.set_lives(lives)
     grid = game.grid
     draw_grid(screen, grid)
 
@@ -225,9 +236,15 @@ def main():
                     sys.exit()
 
                 elif event.key == K_SPACE:
-                    game.munch_number(hero.x, hero.y)
-                    if game.gameover is True:
-                        running = False
+                    if game.munch_number(hero.x, hero.y):
+                        pass
+                    else:
+                        show_score(screen, game.score)
+                        draw_grid(screen, game.grid)
+                        display_message(game.message)
+                        if game.gameover is True:
+                            running = False
+                        wait_for_any_key()
 
                 pressed_keys = pygame.key.get_pressed()
                 # Update player based ok keys pressed
@@ -250,16 +267,12 @@ def main():
         if game.beat_level():
             print("I did win!!!")
         else:
-            display_message(game.message)
-            time.sleep(3)
-
-    show_game_over(screen)
+            show_game_over(screen)
 
 
 main()
 
 # TODO:
-# Add Game Grid Header i.e. ("Multiples of 2")
 # Show game win screen
 # Add Multiples GameType
 # Add menu to choose Game Type

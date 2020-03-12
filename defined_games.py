@@ -15,6 +15,8 @@ def get_game(game_type, level=1):
         return Odds(level=level)
     elif game_type == GameType.Evens:
         return Evens(level=level)
+    elif game_type == GameType.Multiples:
+        return Multiples(level=2)
 
 
 class Evens:
@@ -134,6 +136,68 @@ class Odds:
 
     def start_next_level(self):
         if self.level == 12:
+            self.gameover = True
+            # You Won completely
+        else:
+            self.level += 1
+            self.grid = self.generate_grid(level=self.level)
+
+
+class Multiples:
+    """
+    Class to hold logic for game for playing Odds
+    """
+
+    def __init__(self, level=2):
+        self.grid = self.generate_grid(level=level)
+        self.current_value = -999
+        self.gameover = False
+        self.level = level
+        self.score = 0
+        self.display_name = "Multiples"
+        self.description = "Find Multiples of the Level!"
+
+    @property
+    def level_title(self):
+        return self.display_name
+
+    @property
+    def message(self):
+        return f"Look again! {self.current_value} is not a multiple of {self.level}."
+
+    @staticmethod
+    def generate_grid(rows=5, cols=6, level=2):
+        if rows <= 0:
+            rows = 5
+        if cols <= 0:
+            cols = 6
+        low = 0
+        high = (10 * level) + 1
+        return np.random.randint(low, high, size=(rows, cols))
+
+    def is_value_valid(self):
+        if self.current_value % self.level == 0:
+            return True
+        else:
+            return False
+
+    def munch_number(self, x, y):
+        """Hero eats number, so set that cell value to BOGUS Value so its not displayed"""
+        self.current_value = self.grid[y, x]
+        self.grid[y, x] = -1
+        # if not self.is_value_valid() or self.did_i_win():
+        if self.is_value_valid():
+            self.score += 5
+        else:
+            self.gameover = True
+
+    def beat_level(self):
+        """Take a game grid and check if all values left are even"""
+        no_more_multiples = np.all((self.grid % self.level) != 0)
+        return no_more_multiples
+
+    def start_next_level(self):
+        if self.level >= 12:
             self.gameover = True
             # You Won completely
         else:

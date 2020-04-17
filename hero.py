@@ -1,7 +1,6 @@
 import pygame
 import numpy as np
 
-
 SCREEN_WIDTH = 1024
 SCREEN_HEIGHT = 768
 GREEN = (0, 255, 0)
@@ -10,15 +9,17 @@ GREEN = (0, 255, 0)
 class Hero(pygame.sprite.Sprite):
     def __init__(self, display, shape=(5, 6)):
         super(Hero, self).__init__()
-        self.surf = pygame.Surface((80, 80))
+        hero_sprites = pygame.image.load('hero_sprite.png').convert()
+        hero = pygame.Surface((115, 100))
+        hero.blit(hero_sprites, dest=(0, 0), area=(0, 301, 115, 100))
+        self.surf = pygame.transform.scale(hero, (85, 80))
         self.rect = self.surf.get_rect()
-        self.surf.fill(GREEN)
         self.screen = display
         self.grid = np.zeros(shape=shape)
         self.x = shape[1] // 2
         self.y = shape[0] // 2
 
-        #TODO Get rid of this and pass it in or something
+        # TODO Get rid of this and pass it in or something
         width = 900
         height = 500
         grid_x_start = (SCREEN_WIDTH - width) / 2

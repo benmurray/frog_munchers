@@ -253,15 +253,15 @@ def main(lives=3):
             elif event.type == QUIT:
                 running = False
 
+        hero.move()
         screen.blit(hero.surf, hero.rect)
         show_score(screen, game.score)
         draw_grid(screen, game.grid)
 
         pygame.display.flip()
 
-        # Ensure program maintains a rate of 30 fps
-        clock.tick(20)
-        # Wait for user to press any key to continue
+        # Ensure program maximum rate of 100 fps
+        clock.tick(100)
 
     if game.gameover:
         if game.beat_level():

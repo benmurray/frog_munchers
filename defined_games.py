@@ -131,7 +131,7 @@ class Odds(Game):
 
     def beat_level(self):
         """Take a game grid and check if all values left are even"""
-        are_all_even = np.all((self.grid % 2) == 0)
+        are_all_even = np.all((self.grid[self.grid > 0] % 2) == 0)
         return are_all_even
 
 

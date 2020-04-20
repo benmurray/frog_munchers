@@ -7,12 +7,14 @@ GREEN = (0, 255, 0)
 
 
 class Hero(pygame.sprite.Sprite):
+
     def __init__(self, display, shape=(5, 6)):
         super(Hero, self).__init__()
-        hero_sprites = pygame.image.load('hero_sprite.png').convert()
-        hero = pygame.Surface((115, 100))
-        hero.blit(hero_sprites, dest=(0, 0), area=(0, 301, 115, 100))
-        self.surf = pygame.transform.scale(hero, (85, 80))
+        self.build_images()
+        self.moving = False
+
+        self.surf = pygame.transform.scale(self.mouth_open, (85, 80))
+
         self.rect = self.surf.get_rect()
         self.screen = display
         self.grid = np.zeros(shape=shape)
@@ -32,8 +34,33 @@ class Hero(pygame.sprite.Sprite):
 
         self.rect.left = grid_x_start + (self.x * col_width) + (col_width - self.rect.w) // 2
         self.rect.top = grid_y_start + (self.y * row_height) + (row_height - self.rect.h) // 2
+        self.curr_x, self.curr_y = self.get_start_x_y()
+        self.dest_x, self.dest_y = self.curr_x, self.curr_y
+        self.delta_x = self.delta_y = 0
+
+    def build_images(self):
+        hero_sprites = pygame.image.load('hero_sprite.png').convert()
+        self.standing_hero = pygame.Surface((115, 100))
+        self.standing_hero.blit(hero_sprites, dest=(0, 0), area=(0, 0, 115, 100))
+
+        self.moving_right1 = pygame.Surface((115, 100))
+        self.moving_right1.blit(hero_sprites, dest=(0, 0), area=(0, 101, 115, 100))
+
+        self.moving_right2 = pygame.Surface((115, 100))
+        self.moving_right2.blit(hero_sprites, dest=(0, 0), area=(0, 201, 115, 100))
+
+        self.mouth_open = pygame.Surface((115, 100))
+        self.mouth_open.blit(hero_sprites, dest=(0, 0), area=(0, 301, 115, 100))
+
+        self.scared = pygame.Surface((115, 100))
+        self.scared.blit(hero_sprites, dest=(0, 0), area=(0, 401, 115, 100))
 
     def update_position(self, pressed_keys):
+        if self.moving:
+            return
+        else:
+            self.moving = True
+
         delta_x, delta_y = 0, 0
         if pressed_keys[pygame.K_UP]:
             delta_y = -1
@@ -54,11 +81,58 @@ class Hero(pygame.sprite.Sprite):
         if (self.y + delta_y) >= self.grid.shape[0]:
             delta_y = 0
 
-        self.move_to(delta_x, delta_y)
+        self.set_destination(delta_x, delta_y)
         self.x += delta_x
         self.y += delta_y
+        self.delta_x = delta_x
+        self.delta_y = delta_y
 
-    def move_to(self, x, y):
-        _x = x * self.col_width
-        _y = y * self.row_height
-        self.rect.move_ip(_x, _y)
+    def get_start_x_y(self):
+        return self.x * self.col_width, self.y * self.row_height
+
+    def set_destination(self, x, y):
+        self.dest_x = x * self.col_width + self.curr_x
+        self.dest_y = y * self.row_height + self.curr_y
+
+    def move(self):
+        if self.delta_x == 0 and self.delta_y == 0:
+            self.moving = False
+            return
+        move_step = 10
+        if self.delta_x > 0:
+            if self.curr_x >= self.dest_x:
+                self.curr_x = self.dest_x
+                self.delta_x = 0
+                return
+        if self.delta_x < 0:
+            if self.curr_x <= self.dest_x:
+                self.curr_x = self.dest_x
+                self.delta_x = 0
+                return
+        if self.delta_y > 0:
+            if self.curr_y >= self.dest_y:
+                self.curr_y = self.dest_y
+                self.delta_y = 0
+                return
+        if self.delta_y < 0:
+            if self.curr_y <= self.dest_y:
+                self.curr_y = self.dest_y
+                self.delta_y = 0
+                return
+        move_x = move_y = 0
+
+        if self.delta_x > 0 and self.curr_x < self.dest_x:
+            self.curr_x += move_step
+            move_x = move_step
+        elif self.delta_x < 0 and self.curr_x > self.dest_x:
+            self.curr_x -= move_step
+            move_x = -move_step
+
+        if self.delta_y > 0 and self.curr_y < self.dest_y:
+            self.curr_y += move_step
+            move_y = move_step
+        elif self.delta_y and self.curr_y > self.dest_y:
+            self.curr_y -= move_step
+            move_y = -move_step
+
+        self.rect.move_ip(move_x, move_y)

@@ -25,13 +25,11 @@ SCREEN_WIDTH = 1024
 SCREEN_HEIGHT = 768
 grid_x_start = col_width = grid_y_start = row_height = 0
 
-# pygame.mixer.music.load("Apoxode_-_Electric_1.mp3")
-# pygame.mixer.music.play(loops=-1)
-# move_up_sound = pygame.mixer.Sound("Rising_putter.ogg")
-# move_down_sound = pygame.mixer.Sound("Falling_putter.ogg")
-# collision_sound = pygame.mixer.Sound("sfx_exp_short_hard7.wav")
 eat_snd = pygame.mixer.Sound("assets/sounds/eat.wav")
 wrong_snd = pygame.mixer.Sound("assets/sounds/wrong_answer.wav")
+ambient_music = pygame.mixer.Sound("assets/sounds/ambient.ogg")
+complete_level_fanfare = pygame.mixer.Sound("assets/sounds/tadah.ogg")
+gameover_music = pygame.mixer.Sound("assets/sounds/gameover.ogg")
 
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 screen.fill(BLACK)
@@ -138,6 +136,8 @@ def show_score(scrn, score):
 
 
 def show_game_over(scrn):
+    ambient_music.stop()
+    gameover_music.play()
     _text = pygame.font.Font("assets/fonts/auto_digital.ttf", 76)
     _surf = _text.render("Game Over", True, (255, 0, 0))
     _smtext = pygame.font.Font("assets/fonts/auto_digital.ttf", 32)
@@ -183,6 +183,7 @@ def display_message(msg):
 
 
 def display_completed_level():
+    complete_level_fanfare.play()
     for i in range(9):
         screen.fill(BLUE)
         display_message("Good Job!")
@@ -221,6 +222,7 @@ def main(lives=3):
 
     all_sprites = pygame.sprite.Group()
     all_sprites.add(hero)
+    ambient_music.play(-1).set_volume(0.75)
     running = True
     while running:
 
@@ -268,6 +270,7 @@ def main(lives=3):
         clock.tick(100)
 
     if game.gameover:
+        ambient_music.stop()
         if game.beat_level():
             print("I did win!!!")
         else:

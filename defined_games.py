@@ -81,7 +81,7 @@ class Game:
             rows = 5
         if cols <= 0:
             cols = 6
-        low = 0
+        low = 1
         high = (10 * level) + 1
         return np.random.randint(low, high, size=(rows, cols))
 
@@ -140,8 +140,8 @@ class Odds(Game):
 
     def beat_level(self):
         """Take a game grid and check if all values left are even"""
-        are_all_even = np.all((self.grid[self.grid > 0] % 2) == 0)
-        return are_all_even
+        are_all_odd = np.all((self.grid[self.grid < (MAX_INT - 1)] % 2) == 0)
+        return are_all_odd
 
 
 class Multiples(Game):

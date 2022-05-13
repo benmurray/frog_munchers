@@ -1,6 +1,7 @@
 import sys
 import pygame
 import time
+import numpy as np
 from defined_games import get_game
 from hero import Hero
 from game_menu import show_menu_screen
@@ -29,6 +30,8 @@ grid_x_start = col_width = grid_y_start = row_height = 0
 # move_up_sound = pygame.mixer.Sound("Rising_putter.ogg")
 # move_down_sound = pygame.mixer.Sound("Falling_putter.ogg")
 # collision_sound = pygame.mixer.Sound("sfx_exp_short_hard7.wav")
+eat_snd = pygame.mixer.Sound("assets/sounds/eat.wav")
+wrong_snd = pygame.mixer.Sound("assets/sounds/wrong_answer.wav")
 
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 screen.fill(BLACK)
@@ -62,11 +65,12 @@ def draw_grid(screen, grid):
         pygame.draw.line(screen, PURPLE, (grid_x_start + (col_width * col), grid_y_start),
                          (grid_x_start + (col_width * col), grid_y_start + height), line_width)
 
-    cell_font = pygame.font.Font("/usr/share/fonts/truetype/tlwg/TlwgTypewriter.ttf", 40)
+    cell_font_path = pygame.font.match_font("freesans")
+    cell_font = pygame.font.Font(cell_font_path, 40)
     for row in range(rows):
         for col in range(cols):
             value = grid[row, col]
-            if value < 0:
+            if value == np.iinfo(np.int).max:
                 continue
             cell_surf = cell_font.render(str(value), True, WHITE)
             cell_rect = cell_surf.get_rect()
@@ -121,10 +125,10 @@ def show_score(scrn, score):
     scrn.blit(_surf, (score_txt_x, score_txt_y))
 
     score_box = _font.render(f"{score:5} ", True, WHITE, BLACK)
-
     # thickness of border
     border = 4
-    bgrnd = pygame.Surface((score_box.get_width() + (2 * border), score_box.get_height() + (2 * border)))
+    bgrnd = pygame.Surface((score_box.get_width() + (2 * border),
+                            score_box.get_height() + (2 * border)))
     bgrnd.fill(BLACK)
     rect = bgrnd.get_rect()
     pygame.draw.rect(bgrnd, BLUE, rect, border)
@@ -134,9 +138,9 @@ def show_score(scrn, score):
 
 
 def show_game_over(scrn):
-    _text = pygame.font.Font("/home/ben/.local/share/fonts/auto_digital.ttf", 76)
+    _text = pygame.font.Font("assets/fonts/auto_digital.ttf", 76)
     _surf = _text.render("Game Over", True, (255, 0, 0))
-    _smtext = pygame.font.Font("/home/ben/.local/share/fonts/auto_digital.ttf", 32)
+    _smtext = pygame.font.Font("assets/fonts/auto_digital.ttf", 32)
     _qinstr = _smtext.render("Press (any key) to Quit", True, (255, 0, 0))
     _rect = _surf.get_rect()
     _qrect = _qinstr.get_rect()
@@ -154,7 +158,6 @@ def show_game_over(scrn):
     wait_for_any_key()
     show_menu_screen(scrn)
 
-
 def display_message(msg):
     left = grid_x_start
     top = grid_y_start + 2 * row_height
@@ -167,7 +170,8 @@ def display_message(msg):
     rect = bgrnd.get_rect()
     pygame.draw.rect(bgrnd, PURPLE, rect, 2)
 
-    cell_font = pygame.font.Font("/usr/share/fonts/truetype/tlwg/TlwgTypewriter.ttf", 32)
+    cell_font_path = pygame.font.match_font("freesans")
+    cell_font = pygame.font.Font(cell_font_path, 32)
     cell_surf = cell_font.render(str(msg), True, WHITE, BLACK)
 
     # display black background in middle of grid
@@ -202,12 +206,11 @@ def wait_for_any_key():
 
     return
 
+
 def main(lives=3):
     pygame.display.set_caption("MuRrAy MuNcHeRs!")
-
     chosen_game = show_menu_screen(screen)
 
-    # Hard code Level 5 evens
     game = get_game(chosen_game)
     game.set_lives(lives)
     grid = game.grid
@@ -235,10 +238,11 @@ def main(lives=3):
                     running = False
                     sys.exit()
 
-                elif event.key == K_SPACE:
+                elif event.key == K_SPACE and game.is_cell_populated(hero.x, hero.y):
                     if game.munch_number(hero.x, hero.y):
-                        pass
+                        eat_snd.play()
                     else:
+                        wrong_snd.play()
                         show_score(screen, game.score)
                         draw_grid(screen, game.grid)
                         display_message(game.message)

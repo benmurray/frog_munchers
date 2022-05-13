@@ -2,6 +2,9 @@ import numpy as np
 import enum
 
 
+MAX_INT = np.iinfo(np.int).max
+
+
 class GameType(enum.Enum):
     """These need to be the display_names of the possible games"""
     Odds = 1
@@ -41,10 +44,16 @@ class Game:
     def set_lives(self, lives):
         self.lives = lives
 
+    def is_cell_populated(self, x, y):
+        if self.grid[y, x] == MAX_INT:
+            return False
+        else:
+            return True
+
     def munch_number(self, x, y):
         """Hero eats number, so set that cell value to BOGUS Value so its not displayed"""
         self.current_value = self.grid[y, x]
-        self.grid[y, x] = -1
+        self.grid[y, x] = MAX_INT
         # if not self.is_value_valid() or self.did_i_win():
         if self.is_value_valid():
             self.score += 5

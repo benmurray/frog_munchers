@@ -1,45 +1,44 @@
 """Build a screen where the player can choose the game that want to play"""
 import sys
 import pygame
-from time import sleep
+import pygame_menu
 from defined_games import GameType
 from colors import BLACK, WHITE, GREEN
 
 
-prompt = "Which Game do you want to play?"
+GAME_TYPES = [('Evens', GameType.Evens), ('Odds', GameType.Odds), ('All Multiples', GameType.Multiples)]
+display_menu = True
+game_selected = GameType.Evens
 
 
-def show_menu_screen(scrn):
-    screen = scrn
-    screen.fill(BLACK)
+def set_game_type(game_type, pos):
+    global game_selected
+    game_selected = pos
 
-    _font = pygame.font.SysFont("Courier New", 32)
-    _surf = _font.render(prompt, True, WHITE)
-    main_top = 50
-    main_left = 50
-    screen.blit(_surf, (main_left, main_top))
 
-    option_font = pygame.font.SysFont("Courier New", 24)
-    option_left = main_left + (main_left // 4)
+def start_game(menu):
+    global display_menu
+    display_menu = False
+    menu.disable()
 
-    for idx, game in enumerate(GameType):
-        title = f"{game.value}.  {game.name}"
-        option = option_font.render(title, True, WHITE)
-        screen.blit(option, (option_left, main_top + (idx + 1) * main_top))
 
-    display_menu = True
+def show_menu_screen(screen):
+    global display_menu, game_selected
+
+    menu_music = pygame.mixer.Sound("assets/sounds/menu.ogg")
+    menu_music.play(-1)
+
+    screen = screen
+
+    menu = pygame_menu.Menu('Welcome to Farrar Muncher', 800, 600,
+                            theme=pygame_menu.themes.THEME_GREEN)
+
     while display_menu:
+        menu.add.selector('Game Type:', GAME_TYPES, onchange=set_game_type)
+        menu.add.button('Play', start_game, menu)
+        menu.add.button('Quit', pygame_menu.events.EXIT)
+
+        menu.mainloop(screen)
         pygame.display.update()
-
-        # listen for key to choose number
-        for event in pygame.event.get():
-            if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_ESCAPE or event.key == pygame.QUIT:
-                    display_menu = False
-                try:
-                    return GameType(event.key - pygame.K_0)
-                except ValueError as e:
-                    # key pressed was not a GameType
-                    pass
-
-    sys.exit()
+    menu_music.stop()
+    return GameType(game_selected)

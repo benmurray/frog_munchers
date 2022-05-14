@@ -2,6 +2,7 @@
 import sys
 import pygame
 import pygame_menu
+import settings
 from defined_games import GameType
 from colors import BLACK, WHITE, GREEN
 
@@ -30,7 +31,7 @@ def show_menu_screen(screen):
 
     screen = screen
 
-    menu = pygame_menu.Menu('Welcome to Farrar Muncher', 800, 600,
+    menu = pygame_menu.Menu(f'Welcome to {settings.title}', 800, 600,
                             theme=pygame_menu.themes.THEME_GREEN)
 
     while display_menu:

@@ -1,6 +1,7 @@
 import sys
 import pygame
 import time
+import settings
 import numpy as np
 from defined_games import get_game
 from hero import Hero
@@ -25,7 +26,7 @@ SCREEN_WIDTH = 1024
 SCREEN_HEIGHT = 768
 grid_x_start = col_width = grid_y_start = row_height = 0
 
-eat_snd = pygame.mixer.Sound("assets/sounds/eat.wav")
+eat_snd = pygame.mixer.Sound("assets/sounds/eat.ogg")
 wrong_snd = pygame.mixer.Sound("assets/sounds/wrong_answer.wav")
 ambient_music = pygame.mixer.Sound("assets/sounds/ambient.ogg")
 complete_level_fanfare = pygame.mixer.Sound("assets/sounds/tadah.ogg")
@@ -209,7 +210,7 @@ def wait_for_any_key():
 
 
 def main(lives=3):
-    pygame.display.set_caption("MuRrAy MuNcHeRs!")
+    pygame.display.set_caption(settings.title)
     chosen_game = show_menu_screen(screen)
 
     game = get_game(chosen_game)
@@ -223,6 +224,7 @@ def main(lives=3):
     all_sprites = pygame.sprite.Group()
     all_sprites.add(hero)
     ambient_music.play(-1).set_volume(0.75)
+    eat_snd.set_volume(0.3)
     running = True
     while running:
 

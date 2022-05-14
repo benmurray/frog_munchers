@@ -39,7 +39,7 @@ class Hero(pygame.sprite.Sprite):
         self.delta_x = self.delta_y = 0
 
     def build_images(self):
-        hero_sprites = pygame.image.load('hero_sprite.png').convert()
+        hero_sprites = pygame.image.load('assets/images/hero_sprite.png').convert()
         self.standing_hero = pygame.Surface((115, 100))
         self.standing_hero.blit(hero_sprites, dest=(0, 0), area=(0, 0, 115, 100))
 

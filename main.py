@@ -33,7 +33,7 @@ complete_level_fanfare = pygame.mixer.Sound("assets/sounds/tadah.ogg")
 gameover_music = pygame.mixer.Sound("assets/sounds/gameover.ogg")
 
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
-screen.fill(BLACK)
+screen.fill(settings.green)
 clock = pygame.time.Clock()
 
 
@@ -158,6 +158,7 @@ def show_game_over(scrn):
     pygame.display.update()
     wait_for_any_key()
     show_menu_screen(scrn)
+
 
 def display_message(msg):
     left = grid_x_start

@@ -219,7 +219,7 @@ def main(lives=3):
     grid = game.grid
     draw_grid(screen, grid)
 
-    hero = Hero(display=screen, shape=game.grid.shape)
+    hero = Hero(display=screen, shape=game.grid.shape, game=game)
     # enemies = pygame.sprite.Group()
 
     all_sprites = pygame.sprite.Group()
@@ -270,7 +270,7 @@ def main(lives=3):
         pygame.display.flip()
 
         # Ensure program maximum rate of 100 fps
-        clock.tick(100)
+        clock.tick(settings.frame_rate)
 
     if game.gameover:
         ambient_music.stop()

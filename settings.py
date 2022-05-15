@@ -3,6 +3,7 @@
 
 
 title = 'Frog Munchers!'
+frame_rate = 60
 
 # Farrar Frog Green
 green = "#12581a"

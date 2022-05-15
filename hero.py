@@ -1,6 +1,8 @@
 import pygame
 import numpy as np
 
+import settings
+
 SCREEN_WIDTH = 1024
 SCREEN_HEIGHT = 768
 GREEN = (0, 255, 0)
@@ -8,10 +10,12 @@ GREEN = (0, 255, 0)
 
 class Hero(pygame.sprite.Sprite):
 
-    def __init__(self, display, shape=(5, 6)):
+    def __init__(self, display, shape=(5, 6), game=None):
         super(Hero, self).__init__()
         self.build_images()
         self.moving = False
+        self.move_count = 0
+        self.game = game
 
         self.surf = pygame.transform.scale(self.mouth_open, (85, 80))
 
@@ -55,6 +59,18 @@ class Hero(pygame.sprite.Sprite):
         self.scared = pygame.Surface((115, 100))
         self.scared.blit(hero_sprites, dest=(0, 0), area=(0, 401, 115, 100))
 
+    def close_mouth(self):
+        self.surf = pygame.transform.scale(self.standing_hero, (85, 80))
+
+    def open_mouth(self):
+        self.surf = pygame.transform.scale(self.mouth_open, (85, 80))
+
+    def move_one(self):
+        self.surf = pygame.transform.scale(self.moving_right1, (85, 80))
+
+    def move_two(self):
+        self.surf = pygame.transform.scale(self.moving_right2, (85, 80))
+
     def update_position(self, pressed_keys):
         if self.moving:
             return
@@ -97,7 +113,20 @@ class Hero(pygame.sprite.Sprite):
     def move(self):
         if self.delta_x == 0 and self.delta_y == 0:
             self.moving = False
-            return
+            self.move_count = 0
+            if self.game.is_cell_populated(self.x, self.y):
+                self.open_mouth()
+            else:
+                self.close_mouth()
+        else:
+            self.move_count += 1
+
+            if self.move_count % 3 == 0:
+                if self.move_count % 6 == 0:
+                    self.move_two()
+                else:
+                    self.move_one()
+
         move_step = 10
         if self.delta_x > 0:
             if self.curr_x >= self.dest_x:

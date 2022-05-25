@@ -283,12 +283,15 @@ def main(lives=3):
 main()
 
 # TODO:
-# Show game win screen
+#
 # Add Multiples GameType
-# Add menu to choose Game Type
-# Refactor hard-coded stuff inside hero.py
 # Add Enemy
-# Add Lives (Like 3 Lives)
-# Draw Hero
-# Draw Enemy
+"""
+Determine types - randome, straight line, 80% follow muncher
+How many to put in each level
+How to enter and leave grid
+Develop simple AI for them
+"""
+    # Draw Enemy
+# Add Lives Indicator
 # Add plumbing

@@ -153,10 +153,14 @@ class Multiples(Game):
         super(Multiples, self).__init__(level)
         self.display_name = "Multiples"
         self.description = "Find Multiples of the Level!"
+        self.level = level
 
     @property
     def level_title(self):
-        return self.display_name
+        if self.level is not None:
+            return f"{self.display_name} of {self.level}"
+        else:
+            return self.display_name
 
     @property
     def message(self):
@@ -170,5 +174,5 @@ class Multiples(Game):
 
     def beat_level(self):
         """Take a game grid and check if all values left are even"""
-        no_more_multiples = np.all((self.grid % self.level) != 0)
+        no_more_multiples = np.all((self.grid[self.grid < (MAX_INT - 1)] % self.level) != 0)
         return no_more_multiples

@@ -176,3 +176,32 @@ class Multiples(Game):
         """Take a game grid and check if all values left are even"""
         no_more_multiples = np.all((self.grid[self.grid < (MAX_INT - 1)] % self.level) != 0)
         return no_more_multiples
+
+    @staticmethod
+    def generate_grid(rows=5, cols=6, level=1):
+
+        num_right_answers = np.int((np.random.randint(4, 6) * .1) * (rows * cols))
+        print(f"num_right_answers = {num_right_answers}")
+        if rows <= 0:
+            rows = 5
+        if cols <= 0:
+            cols = 6
+        low = 1
+        high = (12 * level) + 1
+        grid = np.random.randint(low, high, size=(rows * cols))
+
+        print(f"debug = {rows * cols - np.count_nonzero(grid % level)}")
+        if rows * cols - np.count_nonzero(grid % level) < num_right_answers:
+            current_right_answers = (rows * cols - np.count_nonzero(grid % level))
+            print(f"current_right_answers = {current_right_answers}")
+            num_to_add = num_right_answers - current_right_answers
+            print(f"num_to_add = {num_to_add}")
+            while num_to_add > 0:
+                random_place = np.random.randint(0, rows * cols)
+                if grid[random_place] % level != 0:
+                    multiple_of_level = np.random.randint(1, 12) * level
+                    grid[random_place] = multiple_of_level
+                    num_to_add = num_to_add -1
+
+        return grid.reshape((rows, cols))
+

@@ -31,6 +31,7 @@ wrong_snd = pygame.mixer.Sound("assets/sounds/wrong_answer.wav")
 ambient_music = pygame.mixer.Sound("assets/sounds/ambient.ogg")
 complete_level_fanfare = pygame.mixer.Sound("assets/sounds/tadah.ogg")
 gameover_music = pygame.mixer.Sound("assets/sounds/gameover.ogg")
+win_snd = pygame.mixer.Sound("assets/sounds/fanfare.wav")
 
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 screen.fill(settings.green)
@@ -136,28 +137,52 @@ def show_score(scrn, score):
     scrn.blit(score_box, (score_txt_x + _surf.get_width(), score_txt_y))
 
 
-def show_game_over(scrn):
+def show_game_win(scrn, score):
+    show_game_over(scrn, won=True, score=score)
+
+
+def show_game_over(scrn, won=False, score=0):
     ambient_music.stop()
-    gameover_music.play()
-    _text = pygame.font.Font("assets/fonts/auto_digital.ttf", 76)
-    _surf = _text.render("Game Over", True, (255, 0, 0))
-    _smtext = pygame.font.Font("assets/fonts/auto_digital.ttf", 32)
-    _qinstr = _smtext.render("Press (any key) to Quit", True, (255, 0, 0))
-    _rect = _surf.get_rect()
-    _qrect = _qinstr.get_rect()
-    _center = (
-        (SCREEN_WIDTH - _surf.get_width()) / 2,
-        (SCREEN_HEIGHT - _surf.get_height()) / 2
-    )
-    _rect.move_ip(_center)
-    _qrect.move_ip(_center[0], _center[1] + 100)
     scrn.fill((0, 0, 0))
-    scrn.blit(_surf, _rect)
-    scrn.blit(_qinstr, _qrect)
+
+    text_font_32 = pygame.font.Font("assets/fonts/auto_digital.ttf", 32)
+    text_font_64 = pygame.font.Font("assets/fonts/auto_digital.ttf", 64)
+    if won:
+        title_text = text_font_64.render("You Win", True, (255, 0, 0))
+    else:
+        title_text = text_font_64.render("Game Over", True, (255, 0, 0))
+
+    score = text_font_64.render(f"Score = {score}", True, (255, 0, 0))
+    score_rect = score.get_rect()
+
+    text_font = pygame.font.Font("assets/fonts/auto_digital.ttf", 32)
+    instructions_text = text_font_32.render("Press (any key) to Continue", True, (255, 0, 0))
+
+    title_text_rect = title_text.get_rect()
+    instructions_rect = instructions_text.get_rect()
+
+    _center = (SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2)
+
+    title_text_rect.move_ip(_center[0] - (title_text.get_width() / 2),
+                            _center[1] - (title_text.get_height() / 2))
+    if won:
+        # move title text up a bit
+        title_text_rect.move_ip(0, -100)
+        score_rect.move_ip(_center[0] - (score.get_width() / 2), _center[1])
+        instructions_rect.move_ip(_center[0] - (instructions_text.get_width() / 2), _center[1] + 200)
+        scrn.blit(score, score_rect)
+        win_snd.play()
+    else:
+        instructions_rect.move_ip(_center[0] - (instructions_text.get_width() / 2), _center[1] + 100)
+        gameover_music.play(-1)
+
+    scrn.blit(title_text, title_text_rect)
+    scrn.blit(instructions_text, instructions_rect)
     pygame.display.flip()
     pygame.display.update()
     wait_for_any_key()
-    show_menu_screen(scrn)
+    gameover_music.stop()
+    win_snd.stop()
 
 
 def display_message(msg):
@@ -185,6 +210,7 @@ def display_message(msg):
 
 
 def display_completed_level():
+    ambient_music.stop()
     complete_level_fanfare.play()
     for i in range(9):
         screen.fill(BLUE)
@@ -195,6 +221,7 @@ def display_completed_level():
         display_message("Good Job!")
         pygame.display.flip()
         clock.tick(9)
+    ambient_music.stop()
 
 
 def wait_for_any_key():
@@ -210,12 +237,12 @@ def wait_for_any_key():
     return
 
 
-def main(lives=3):
-    pygame.display.set_caption(settings.title)
-    chosen_game = show_menu_screen(screen)
-
+def game_loop(chosen_game, lives=3, level=None):
     game = get_game(chosen_game)
-    game.set_lives(lives)
+    if level is None:
+        game.start_over(lives)
+    else:
+        game.start_over(lives, level)
     grid = game.grid
     draw_grid(screen, grid)
 
@@ -240,7 +267,6 @@ def main(lives=3):
 
             if event.type == KEYDOWN:
                 if event.key == K_ESCAPE or event.key == QUIT:
-                    running = False
                     sys.exit()
 
                 elif event.key == K_SPACE and game.is_cell_populated(hero.x, hero.y):
@@ -253,7 +279,9 @@ def main(lives=3):
                         display_message(game.message)
                         if game.gameover is True:
                             running = False
-                        wait_for_any_key()
+                        now = pygame.time.get_ticks()
+                        while pygame.time.get_ticks() - now <= 1200:
+                            pass
 
                 pressed_keys = pygame.key.get_pressed()
                 # Update player based ok keys pressed
@@ -272,15 +300,23 @@ def main(lives=3):
         # Ensure program maximum rate of 100 fps
         clock.tick(settings.frame_rate)
 
-    if game.gameover:
-        ambient_music.stop()
-        if game.beat_level():
-            print("I did win!!!")
-        else:
-            show_game_over(screen)
+        if game.gameover:
+            running = False
+            ambient_music.stop()
+            if game.beat_level():
+                show_game_win(screen, game.score)
+            else:
+                show_game_over(screen)
 
 
-main()
+def start_game():
+    pygame.display.set_caption(settings.title)
+    while True:
+        chosen_game = show_menu_screen(screen)
+        game_loop(chosen_game)
+
+
+start_game()
 
 # TODO:
 #

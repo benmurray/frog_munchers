@@ -31,6 +31,7 @@ def draw_background(screen):
 
 def show_menu_screen(screen):
     global display_menu, game_selected
+    display_menu = True
 
     menu_music = pygame.mixer.Sound("assets/sounds/menu.ogg")
     menu_music.play(-1)

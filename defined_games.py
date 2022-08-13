@@ -30,8 +30,10 @@ class Game:
         self.current_value = -999
         self.gameover = False
         self.level = level
+        self.last_level = 12
         self.lives = 3
         self.score = 0
+        self.starting_level = level
 
     @property
     def level_title(self):
@@ -42,6 +44,13 @@ class Game:
         raise NotImplementedError
 
     def set_lives(self, lives):
+        self.lives = lives
+
+    def start_over(self, lives, level=None):
+        if level is None:
+            self.level = self.starting_level
+        else:
+            self.level = level
         self.lives = lives
 
     def is_cell_populated(self, x, y):
@@ -68,8 +77,9 @@ class Game:
         raise NotImplementedError
 
     def start_next_level(self):
+        # if self.level > self.last_level:
         if self.level == 12:
-            self.gameover = True
+                self.gameover = True
             # You Won completely
         else:
             self.level += 1

@@ -115,6 +115,29 @@ def show_title(scrn, title_txt):
     scrn.blit(_surf, (_x, top_y + title_padding))
 
 
+def show_lives(screen, num_lives=3):
+    """ Lives: @@@ """
+    hero_image = pygame.image.load('assets/images/life_indicator.png').convert()
+    width = hero_image.get_width()
+    width += 5  # add space between each individual image
+    lives_surface = pygame.Surface((width * 3, 50))
+
+    for i in range(num_lives):
+        lives_surface.blit(hero_image, dest=(width * i, 0), area=(0, 0, width, 50))
+
+    text = "Lives: "
+    font = pygame.font.SysFont("Courier New", 32)
+    text_surface = font.render(text, True, WHITE)
+
+    w = screen.get_width()
+    h = screen.get_height()
+
+    h = h - lives_surface.get_height();
+    w = w - (text_surface.get_width() + lives_surface.get_width())
+
+    screen.blit(text_surface, dest=(w, h))
+    screen.blit(lives_surface, dest=(w + text_surface.get_width(), h))
+
 def show_score(scrn, score):
     """Show score underneath the game grid."""
     score_txt_y = 500 + grid_y_start + 20
@@ -288,8 +311,10 @@ def game_loop(chosen_game, lives=3, level=None):
                 hero.update_position(pressed_keys)
 
             elif event.type == QUIT:
+                ambient_music.stop()
                 running = False
 
+        show_lives(screen, game.lives)
         hero.move()
         screen.blit(hero.surf, hero.rect)
         show_score(screen, game.score)
@@ -318,9 +343,7 @@ def start_game():
 
 start_game()
 
-# TODO:
-#
-# Add Multiples GameType
+# Add Lives Indicator
 # Add Enemy
 """
 Determine types - randome, straight line, 80% follow muncher
@@ -328,6 +351,3 @@ How many to put in each level
 How to enter and leave grid
 Develop simple AI for them
 """
-    # Draw Enemy
-# Add Lives Indicator
-# Add plumbing

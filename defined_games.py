@@ -191,7 +191,6 @@ class Multiples(Game):
     def generate_grid(rows=5, cols=6, level=1):
 
         num_right_answers = np.int((np.random.randint(4, 6) * .1) * (rows * cols))
-        print(f"num_right_answers = {num_right_answers}")
         if rows <= 0:
             rows = 5
         if cols <= 0:
@@ -200,12 +199,9 @@ class Multiples(Game):
         high = (12 * level) + 1
         grid = np.random.randint(low, high, size=(rows * cols))
 
-        print(f"debug = {rows * cols - np.count_nonzero(grid % level)}")
         if rows * cols - np.count_nonzero(grid % level) < num_right_answers:
             current_right_answers = (rows * cols - np.count_nonzero(grid % level))
-            print(f"current_right_answers = {current_right_answers}")
             num_to_add = num_right_answers - current_right_answers
-            print(f"num_to_add = {num_to_add}")
             while num_to_add > 0:
                 random_place = np.random.randint(0, rows * cols)
                 if grid[random_place] % level != 0:

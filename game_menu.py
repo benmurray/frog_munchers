@@ -39,8 +39,8 @@ def show_menu_screen(screen):
 
     bg_image.draw(screen)
 
-    my_theme = pygame_menu.Theme(background_color=settings.green2,  # transparent background
-                                 title_background_color=settings.green,
+    my_theme = pygame_menu.Theme(background_color=settings.GREEN2,  # transparent background
+                                 title_background_color=settings.GREEN,
                                  title_font_shadow=True,
                                  widget_font=pygame_menu.font.FONT_FRANCHISE,
                                  widget_font_color="#ffffff",
@@ -49,7 +49,7 @@ def show_menu_screen(screen):
                                  )
     my_theme.set_background_color_opacity(0.7)
 
-    menu = pygame_menu.Menu(f'Welcome to {settings.title}',
+    menu = pygame_menu.Menu(f'Welcome to {settings.TITLE}',
                             width=screen.get_width() * 0.6,
                             height=screen.get_height() * 0.7,
                             theme=my_theme)

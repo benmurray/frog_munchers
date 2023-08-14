@@ -8,6 +8,8 @@ from hero import Hero
 from game_menu import show_menu_screen
 from colors import BLACK, WHITE, PURPLE, BLUE, ORANGE
 
+from settings import SCREEN_WIDTH, SCREEN_HEIGHT, FRAME_RATE, GREEN, TITLE
+
 from pygame.locals import (
     RLEACCEL,
     K_SPACE,
@@ -22,8 +24,6 @@ from pygame.locals import (
 )
 pygame.init()
 
-SCREEN_WIDTH = 1024
-SCREEN_HEIGHT = 768
 grid_x_start = col_width = grid_y_start = row_height = 0
 
 eat_snd = pygame.mixer.Sound("assets/sounds/eat.ogg")
@@ -34,7 +34,7 @@ gameover_music = pygame.mixer.Sound("assets/sounds/gameover.ogg")
 win_snd = pygame.mixer.Sound("assets/sounds/fanfare.wav")
 
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
-screen.fill(settings.green)
+screen.fill(GREEN)
 clock = pygame.time.Clock()
 
 
@@ -245,7 +245,7 @@ def display_completed_level():
         display_message("Good Job!")
         pygame.display.flip()
         clock.tick(9)
-    ambient_music.stop()
+    ambient_music.play()
 
 
 def wait_for_any_key():
@@ -324,7 +324,7 @@ def game_loop(chosen_game, lives=3, level=None):
         pygame.display.flip()
 
         # Ensure program maximum rate of 100 fps
-        clock.tick(settings.frame_rate)
+        clock.tick(FRAME_RATE)
 
         if game.gameover:
             running = False
@@ -336,7 +336,7 @@ def game_loop(chosen_game, lives=3, level=None):
 
 
 def start_game():
-    pygame.display.set_caption(settings.title)
+    pygame.display.set_caption(TITLE)
     while True:
         chosen_game = show_menu_screen(screen)
         game_loop(chosen_game)

@@ -3,8 +3,8 @@ import numpy as np
 
 import settings
 
-SCREEN_WIDTH = 1024
-SCREEN_HEIGHT = 768
+SCREEN_WIDTH = settings.SCREEN_WIDTH
+SCREEN_HEIGHT = settings.SCREEN_HEIGHT
 GREEN = (0, 255, 0)
 
 
@@ -25,9 +25,8 @@ class Hero(pygame.sprite.Sprite):
         self.x = shape[1] // 2
         self.y = shape[0] // 2
 
-        # TODO Get rid of this and pass it in or something
-        width = 900
-        height = 500
+        width = settings.BOARD_WIDTH
+        height = settings.BOARD_HEIGHT
         grid_x_start = (SCREEN_WIDTH - width) / 2
         col_width = int(width / self.grid.shape[1])
         grid_y_start = (SCREEN_HEIGHT - height) / 2

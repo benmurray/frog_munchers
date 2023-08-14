@@ -1,10 +1,21 @@
-# coding=utf-8
-#  Copyright (c) 2022 Axient - All Rights Reserved.
+from enum import Enum
 
 
-title = 'Frog Munchers!'
-frame_rate = 60
+class Direction(Enum):
+    UP = 1
+    DOWN = 2
+    LEFT = 3
+    RIGHT = 4
+
+
+TITLE = 'Frog Munchers!'
+SCREEN_WIDTH = 1024
+SCREEN_HEIGHT = 768
+BOARD_WIDTH = 900
+BOARD_HEIGHT = 500
+
+FRAME_RATE = 60
 
 # Farrar Frog Green
-green = "#12581a"
-green2 = "#006118"
+GREEN = "#12581a"
+GREEN2 = "#006118"

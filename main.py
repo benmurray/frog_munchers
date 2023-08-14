@@ -1,9 +1,9 @@
 import sys
+import os
 import pygame
 import time
-import settings
 import numpy as np
-from defined_games import get_game
+from defined_games import get_game, GameType
 from hero import Hero
 from game_menu import show_menu_screen
 from colors import BLACK, WHITE, PURPLE, BLUE, ORANGE
@@ -22,6 +22,7 @@ from pygame.locals import (
     KEYDOWN,
     QUIT,
 )
+
 pygame.init()
 
 grid_x_start = col_width = grid_y_start = row_height = 0
@@ -36,13 +37,6 @@ win_snd = pygame.mixer.Sound("assets/sounds/fanfare.wav")
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 screen.fill(GREEN)
 clock = pygame.time.Clock()
-
-
-# Create a custom event for adding a new enemy
-# ADDENEMY = pygame.USEREVENT + 1
-# pygame.time.set_timer(ADDENEMY, 250)
-# ADDCLOUD = pygame.USEREVENT + 2
-# pygame.time.set_timer(ADDCLOUD, 1000)
 
 
 def draw_grid(screen, grid):
@@ -82,6 +76,27 @@ def draw_grid(screen, grid):
 
             cell_rect.move_ip(cell_pos)
             screen.blit(cell_surf, cell_rect)
+
+
+def draw_offstage(screen: pygame.Surface) -> None:
+    """
+    Draws a black rectangle around the grid. Used to hide enemies spawning off grid and coming
+    into the grid.
+    """
+    global grid_x_start, grid_y_start
+    width = 900
+    height = 500  # These need to be the same as in draw_grid (for now)
+    screen_width = int(screen.get_width())
+    screen_height = int(screen.get_height())
+    top = pygame.Surface((screen_width, grid_y_start))
+    bottom = pygame.Surface((screen_width, grid_y_start))
+    left = pygame.Surface((grid_x_start, screen_height))
+    right = pygame.Surface((grid_x_start, screen_height))
+
+    screen.blit(top, dest=(0, 0))
+    screen.blit(bottom, dest=(0, screen_height - grid_y_start))
+    screen.blit(left, dest=(0, 0))
+    screen.blit(right, dest=(screen_width - (screen_width - width) / 2, 0))
 
 
 def show_level(scrn, level):
@@ -261,7 +276,7 @@ def wait_for_any_key():
     return
 
 
-def game_loop(chosen_game, lives=3, level=None):
+def run_game_loop(chosen_game, lives=3, level=None):
     game = get_game(chosen_game)
     if level is None:
         game.start_over(lives)
@@ -285,15 +300,18 @@ def game_loop(chosen_game, lives=3, level=None):
             game.start_next_level()
 
         screen.fill(BLACK)
-        show_level(screen, game.level)
-        show_title(screen, game.level_title)
+        # pressed_keys
         for event in pygame.event.get():
 
-            if event.type == KEYDOWN:
-                if event.key == K_ESCAPE or event.key == QUIT:
-                    sys.exit()
+            pressed_keys = pygame.key.get_pressed()
 
-                elif event.key == K_SPACE and game.is_cell_populated(hero.x, hero.y):
+            # Quit at anytime with shift + escape
+            if pressed_keys[pygame.K_ESCAPE] and (pressed_keys[pygame.K_LSHIFT] or pressed_keys[pygame.K_RSHIFT]):
+                pygame.display.quit()
+                sys.exit()
+
+            if event.type == KEYDOWN:
+                if event.key == K_SPACE and game.is_cell_populated(hero.x, hero.y):
                     if game.munch_number(hero.x, hero.y):
                         eat_snd.play()
                     else:
@@ -307,7 +325,6 @@ def game_loop(chosen_game, lives=3, level=None):
                         while pygame.time.get_ticks() - now <= 1200:
                             pass
 
-                pressed_keys = pygame.key.get_pressed()
                 # Update player based ok keys pressed
                 hero.update_position(pressed_keys)
 
@@ -315,11 +332,16 @@ def game_loop(chosen_game, lives=3, level=None):
                 ambient_music.stop()
                 running = False
 
-        show_lives(screen, game.lives)
         hero.move()
+
         screen.blit(hero.surf, hero.rect)
-        show_score(screen, game.score)
+
         draw_grid(screen, game.grid)
+        draw_offstage(screen)
+        show_level(screen, game.level)
+        show_title(screen, game.level_title)
+        show_score(screen, game.score)
+        show_lives(screen, game.lives)
 
         pygame.display.flip()
 
@@ -333,18 +355,23 @@ def game_loop(chosen_game, lives=3, level=None):
                 show_game_win(screen, game.score)
             else:
                 show_game_over(screen)
+        elif not running:
+            pygame.display.quit()
+            sys.exit()
 
 
 def start_game():
     pygame.display.set_caption(TITLE)
     while True:
-        chosen_game = show_menu_screen(screen)
-        game_loop(chosen_game)
+        if os.getenv('TESTING_MUNCHER') == '1':
+            run_game_loop(GameType.Multiples, lives=1, level=11)
+        else:
+            chosen_game = show_menu_screen(screen)
+            run_game_loop(chosen_game)
 
 
 start_game()
 
-# Add Lives Indicator
 # Add Enemy
 """
 Determine types - randome, straight line, 80% follow muncher

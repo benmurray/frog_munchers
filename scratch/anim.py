@@ -103,17 +103,17 @@ screen = pygame.display.set_mode((width, height))
 pygame.display.set_caption("Animation")
 
 
-moving_sprintes = pygame.sprite.Group()
+moving_sprites = pygame.sprite.Group()
 player = Player('purple', 100, 100)
 player2 = Player('red', 250, 100)
 player3 = Player('blue', 400, 100)
 player4 = Player('green', 550, 100)
 player5 = Player('slime', 700, 100)
-moving_sprintes.add(player)
-moving_sprintes.add(player2)
-moving_sprintes.add(player3)
-moving_sprintes.add(player4)
-moving_sprintes.add(player5)
+moving_sprites.add(player)
+moving_sprites.add(player2)
+moving_sprites.add(player3)
+moving_sprites.add(player4)
+moving_sprites.add(player5)
 
 while True:
     for event in pygame.event.get():
@@ -156,7 +156,7 @@ while True:
 
     # Drawing
     screen.fill((0, 0, 0))
-    moving_sprintes.update()
-    moving_sprintes.draw(screen)
+    moving_sprites.update()
+    moving_sprites.draw(screen)
     pygame.display.flip()
     clock.tick(60)

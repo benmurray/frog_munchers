@@ -3,6 +3,8 @@ import os
 import pygame
 import time
 import numpy as np
+
+from EnemyManager import EnemyManager
 from defined_games import get_game, GameType
 from hero import Hero
 from game_menu import show_menu_screen
@@ -286,18 +288,19 @@ def run_game_loop(chosen_game, lives=3, level=None):
     draw_grid(screen, grid)
 
     hero = Hero(display=screen, shape=game.grid.shape, game=game)
+    enemy_manager = EnemyManager(screen=screen)
     # enemies = pygame.sprite.Group()
 
-    all_sprites = pygame.sprite.Group()
-    all_sprites.add(hero)
     ambient_music.play(-1).set_volume(0.75)
     eat_snd.set_volume(0.3)
+    time_at_level_start = pygame.time.get_ticks()
     running = True
     while running:
 
         if game.beat_level():
             display_completed_level()
             game.start_next_level()
+            enemy_manager.level = game.level
 
         screen.fill(BLACK)
         # pressed_keys
@@ -321,9 +324,6 @@ def run_game_loop(chosen_game, lives=3, level=None):
                         display_message(game.message)
                         if game.gameover is True:
                             running = False
-                        now = pygame.time.get_ticks()
-                        while pygame.time.get_ticks() - now <= 1200:
-                            pass
 
                 # Update player based ok keys pressed
                 hero.update_position(pressed_keys)
@@ -332,7 +332,8 @@ def run_game_loop(chosen_game, lives=3, level=None):
                 ambient_music.stop()
                 running = False
 
-        hero.move()
+        hero.update()
+        enemy_manager.update()
 
         screen.blit(hero.surf, hero.rect)
 

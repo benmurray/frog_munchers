@@ -109,6 +109,9 @@ class Hero(pygame.sprite.Sprite):
         self.dest_x = x * self.col_width + self.curr_x
         self.dest_y = y * self.row_height + self.curr_y
 
+    def update(self):
+        self.move()
+
     def move(self):
         if self.delta_x == 0 and self.delta_y == 0:
             self.moving = False

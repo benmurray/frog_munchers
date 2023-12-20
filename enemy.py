@@ -30,7 +30,6 @@ class Enemy(pygame.sprite.Sprite):
         self.idle, self.left, self.right, self.up, self.down = self.create_loops()
         self.current_sprite_loop = self.idle
 
-        self.pos = (-1000, -1000)
         self.rect = self.image.get_rect()
         self.rect.topleft = [0, 0]
 
@@ -54,7 +53,9 @@ class Enemy(pygame.sprite.Sprite):
 
         self.rect.left = grid_x_start + (self.x * col_width) + (col_width - self.rect.w) // 2
         self.rect.top = grid_y_start + (self.y * row_height) + (row_height - self.rect.h) // 2
-        self.curr_x, self.curr_y = self.get_start_x_y()
+
+        # start off screen
+        self.curr_x, self.curr_y = -1000, -1000
         self.dest_x, self.dest_y = self.curr_x, self.curr_y
         self.delta_x = self.delta_y = 0
 

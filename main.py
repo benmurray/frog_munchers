@@ -1,3 +1,4 @@
+import argparse
 import sys
 import os
 import pygame
@@ -9,18 +10,9 @@ from defined_games import get_game, GameType
 from hero import Hero
 from game_menu import show_menu_screen
 from colors import BLACK, WHITE, PURPLE, BLUE, ORANGE
-
 from settings import SCREEN_WIDTH, SCREEN_HEIGHT, FRAME_RATE, GREEN, TITLE
-
 from pygame.locals import (
-    RLEACCEL,
     K_SPACE,
-    K_q,
-    K_UP,
-    K_DOWN,
-    K_LEFT,
-    K_RIGHT,
-    K_ESCAPE,
     KEYDOWN,
     QUIT,
 )
@@ -53,28 +45,45 @@ def draw_grid(screen, grid):
     grid_y_start = (SCREEN_HEIGHT - height) / 2
     row_height = int(height / rows)
     # outside = pygame.rect(left=20, top=20, width=800, height=600)
-    pygame.draw.rect(screen, PURPLE, (grid_x_start, grid_y_start, width, height), line_width)
+    pygame.draw.rect(
+        screen, PURPLE, (grid_x_start, grid_y_start, width, height), line_width
+    )
     for row in range(1, rows):
-        pygame.draw.line(screen, PURPLE, (grid_x_start, grid_y_start + (row_height * row)),
-                         (grid_x_start + width, grid_y_start + (row_height * row)), line_width)
+        pygame.draw.line(
+            screen,
+            PURPLE,
+            (grid_x_start, grid_y_start + (row_height * row)),
+            (grid_x_start + width, grid_y_start + (row_height * row)),
+            line_width,
+        )
     for col in range(1, cols):
-        pygame.draw.line(screen, PURPLE, (grid_x_start + (col_width * col), grid_y_start),
-                         (grid_x_start + (col_width * col), grid_y_start + height), line_width)
+        pygame.draw.line(
+            screen,
+            PURPLE,
+            (grid_x_start + (col_width * col), grid_y_start),
+            (grid_x_start + (col_width * col), grid_y_start + height),
+            line_width,
+        )
 
     cell_font_path = pygame.font.match_font("freesans")
     cell_font = pygame.font.Font(cell_font_path, 40)
     for row in range(rows):
         for col in range(cols):
             value = grid[row, col]
-            if value == np.iinfo(np.int).max:
+            if value == np.iinfo(int).max:
                 continue
             cell_surf = cell_font.render(str(value), True, WHITE)
             cell_rect = cell_surf.get_rect()
 
             # calculate centering the number
-            cell_pos = (grid_x_start + (col * col_width), grid_y_start + (row * row_height))
-            cell_pos = (cell_pos[0] + (col_width - cell_rect.width) / 2,
-                        cell_pos[1] + (row_height - cell_rect.height) / 2)
+            cell_pos = (
+                grid_x_start + (col * col_width),
+                grid_y_start + (row * row_height),
+            )
+            cell_pos = (
+                cell_pos[0] + (col_width - cell_rect.width) / 2,
+                cell_pos[1] + (row_height - cell_rect.height) / 2,
+            )
 
             cell_rect.move_ip(cell_pos)
             screen.blit(cell_surf, cell_rect)
@@ -122,8 +131,12 @@ def show_title(scrn, title_txt):
     # Get Title and title width to center title
     start_from = scrn.get_width() // 3
     line_w = int(scrn.get_width() // 2)
-    top_line = pygame.draw.line(scrn, ORANGE, (start_from, top_y), (start_from + line_w, top_y), thickness)
-    bottom_line = pygame.draw.line(scrn, ORANGE, (start_from, bottom_y), (start_from + line_w, bottom_y), thickness)
+    top_line = pygame.draw.line(
+        scrn, ORANGE, (start_from, top_y), (start_from + line_w, top_y), thickness
+    )
+    bottom_line = pygame.draw.line(
+        scrn, ORANGE, (start_from, bottom_y), (start_from + line_w, bottom_y), thickness
+    )
 
     _font = pygame.font.SysFont("Courier New", 48)
     _surf = _font.render(title_txt, True, WHITE)
@@ -133,8 +146,8 @@ def show_title(scrn, title_txt):
 
 
 def show_lives(screen, num_lives=3):
-    """ Lives: @@@ """
-    hero_image = pygame.image.load('assets/images/life_indicator.png').convert()
+    """Lives: @@@"""
+    hero_image = pygame.image.load("assets/images/life_indicator.png").convert()
     width = hero_image.get_width()
     width += 5  # add space between each individual image
     lives_surface = pygame.Surface((width * 3, 50))
@@ -149,7 +162,7 @@ def show_lives(screen, num_lives=3):
     w = screen.get_width()
     h = screen.get_height()
 
-    h = h - lives_surface.get_height();
+    h = h - lives_surface.get_height()
     w = w - (text_surface.get_width() + lives_surface.get_width())
 
     screen.blit(text_surface, dest=(w, h))
@@ -168,8 +181,9 @@ def show_score(scrn, score):
     score_box = _font.render(f"{score:5} ", True, WHITE, BLACK)
     # thickness of border
     border = 4
-    bgrnd = pygame.Surface((score_box.get_width() + (2 * border),
-                            score_box.get_height() + (2 * border)))
+    bgrnd = pygame.Surface(
+        (score_box.get_width() + (2 * border), score_box.get_height() + (2 * border))
+    )
     bgrnd.fill(BLACK)
     rect = bgrnd.get_rect()
     pygame.draw.rect(bgrnd, BLUE, rect, border)
@@ -197,24 +211,32 @@ def show_game_over(scrn, won=False, score=0):
     score_rect = score.get_rect()
 
     text_font = pygame.font.Font("assets/fonts/auto_digital.ttf", 32)
-    instructions_text = text_font_32.render("Press (any key) to Continue", True, (255, 0, 0))
+    instructions_text = text_font_32.render(
+        "Press (any key) to Continue", True, (255, 0, 0)
+    )
 
     title_text_rect = title_text.get_rect()
     instructions_rect = instructions_text.get_rect()
 
     _center = (SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2)
 
-    title_text_rect.move_ip(_center[0] - (title_text.get_width() / 2),
-                            _center[1] - (title_text.get_height() / 2))
+    title_text_rect.move_ip(
+        _center[0] - (title_text.get_width() / 2),
+        _center[1] - (title_text.get_height() / 2),
+    )
     if won:
         # move title text up a bit
         title_text_rect.move_ip(0, -100)
         score_rect.move_ip(_center[0] - (score.get_width() / 2), _center[1])
-        instructions_rect.move_ip(_center[0] - (instructions_text.get_width() / 2), _center[1] + 200)
+        instructions_rect.move_ip(
+            _center[0] - (instructions_text.get_width() / 2), _center[1] + 200
+        )
         scrn.blit(score, score_rect)
         win_snd.play()
     else:
-        instructions_rect.move_ip(_center[0] - (instructions_text.get_width() / 2), _center[1] + 100)
+        instructions_rect.move_ip(
+            _center[0] - (instructions_text.get_width() / 2), _center[1] + 100
+        )
         gameover_music.play(-1)
 
     scrn.blit(title_text, title_text_rect)
@@ -245,8 +267,13 @@ def display_message(msg):
     # display black background in middle of grid
     screen.blit(bgrnd, (left, top))
     # display message centered on top of bgrnd
-    screen.blit(cell_surf,
-                (left + (bgrnd_width - cell_surf.get_width()) / 2, top + (bgrnd_height - cell_surf.get_height()) / 2))
+    screen.blit(
+        cell_surf,
+        (
+            left + (bgrnd_width - cell_surf.get_width()) / 2,
+            top + (bgrnd_height - cell_surf.get_height()) / 2,
+        ),
+    )
     pygame.display.update()
 
 
@@ -269,9 +296,7 @@ def wait_for_any_key():
     time.sleep(1)
     waiting = True
     while waiting:
-
         for event in pygame.event.get():
-
             if event.type == KEYDOWN:
                 waiting = False
 
@@ -288,28 +313,34 @@ def run_game_loop(chosen_game, lives=3, level=None):
     draw_grid(screen, grid)
 
     hero = Hero(display=screen, shape=game.grid.shape, game=game)
-    enemy_manager = EnemyManager(screen=screen)
+    enemy_manager = EnemyManager(screen=screen, level=level)
     # enemies = pygame.sprite.Group()
 
     ambient_music.play(-1).set_volume(0.75)
     eat_snd.set_volume(0.3)
-    time_at_level_start = pygame.time.get_ticks()
+    # used for timing Enemies
+    time_at_level_start = pygame.time.get_ticks() // 1000
+
     running = True
     while running:
-
         if game.beat_level():
             display_completed_level()
             game.start_next_level()
+            # update the time of level start
+            time_at_level_start = pygame.time.get_ticks()
             enemy_manager.level = game.level
+
+        time_in_level = pygame.time.get_ticks() // 1000 - time_at_level_start
 
         screen.fill(BLACK)
         # pressed_keys
         for event in pygame.event.get():
-
             pressed_keys = pygame.key.get_pressed()
 
             # Quit at anytime with shift + escape
-            if pressed_keys[pygame.K_ESCAPE] and (pressed_keys[pygame.K_LSHIFT] or pressed_keys[pygame.K_RSHIFT]):
+            if pressed_keys[pygame.K_ESCAPE] and (
+                pressed_keys[pygame.K_LSHIFT] or pressed_keys[pygame.K_RSHIFT]
+            ):
                 pygame.display.quit()
                 sys.exit()
 
@@ -333,7 +364,7 @@ def run_game_loop(chosen_game, lives=3, level=None):
                 running = False
 
         hero.update()
-        enemy_manager.update()
+        enemy_manager.update(time_in_level)
 
         screen.blit(hero.surf, hero.rect)
 
@@ -361,21 +392,26 @@ def run_game_loop(chosen_game, lives=3, level=None):
             sys.exit()
 
 
-def start_game():
+def start_game(debug=False):
     pygame.display.set_caption(TITLE)
     while True:
-        if os.getenv('TESTING_MUNCHER') == '1':
+        if debug:
             run_game_loop(GameType.Multiples, lives=1, level=11)
         else:
             chosen_game = show_menu_screen(screen)
             run_game_loop(chosen_game)
 
 
-start_game()
+parser = argparse.ArgumentParser()
+parser.add_argument('-d', '--debug', action='store_true', help="Debug Mode")
+
+args = parser.parse_args()
+
+start_game(debug=args.debug)
 
 # Add Enemy
 """
-Determine types - randome, straight line, 80% follow muncher
+Determine types - random, straight line, 80% follow muncher
 How many to put in each level
 How to enter and leave grid
 Develop simple AI for them

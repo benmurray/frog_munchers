@@ -1,3 +1,4 @@
+import time
 import pygame
 import settings
 from enemy import Enemy
@@ -8,11 +9,14 @@ class EnemyManager:
     def __init__(self, screen, level: int = 1):
         assert(screen is not None)
         self.screen = screen
-        self.current_level = level
+        self.max_enemies_at_level = 0
         self.start_time = 0
         self.current_level_start_time = 0
+        self.last_spawn_time = 0
+        self.cool_down_time = 3
 
         self.enemies = []
+        self.level = level
 
     @property
     def level(self):
@@ -24,16 +28,21 @@ class EnemyManager:
         self.reset_level()
 
     # Called once per frame
-    def update(self):
-        self._check_if_spawn()
+    def update(self, time_in_level: int = 0):
+        self._check_if_spawn(time_in_level)
         self._update_enemies()
 
     def clear_enemies(self):
         self.enemies = []
 
-    def _check_if_spawn(self):
+    def _check_if_spawn(self, time_in_level):
+        """_summary_
+
+        Args:
+            time_in_level (int): time, in seconds, of being in level
+        """
         if self.current_level > 0:
-            if self._time_to_spawn():
+            if self._time_to_spawn(time_in_level):
                 new_enemy = Enemy()
                 self.enemies.append(new_enemy)
                 # spawn enemy
@@ -48,14 +57,16 @@ class EnemyManager:
         for enemy in self.enemies:
             enemy.update()
 
-    def _time_to_spawn(self) -> bool:
-        if len(self.enemies) < 1 and (pygame.time.get_ticks() - self.current_level_start_time < 2000):
+    def _time_to_spawn(self, time_in_level) -> bool:
+        in_cool_down = (time_in_level - self.last_spawn_time) > self.cool_down_time
+
+        if in_cool_down and len(self.enemies) < self.max_enemies_at_level:
+            self.last_spawn_time = time_in_level
             return True
         else:
             return False
 
     def reset_level(self) -> None:
         """Reset level enemies, level_start_time"""
-        self.current_level_start_time = pygame.time.get_ticks()
+        self.max_enemies_at_level = self.current_level // 3
         self.enemies = []
-

@@ -2,11 +2,12 @@ import numpy as np
 import enum
 
 
-MAX_INT = np.iinfo(np.int).max
+MAX_INT = np.iinfo(int).max
 
 
 class GameType(enum.Enum):
     """These need to be the display_names of the possible games"""
+
     Odds = 1
     Evens = 2
     Multiples = 3
@@ -25,6 +26,7 @@ class Game:
     """
     Parent class for all games
     """
+
     def __init__(self, level=1):
         self.grid = self.generate_grid(level=level)
         self.current_value = -999
@@ -79,8 +81,8 @@ class Game:
     def start_next_level(self):
         # if self.level > self.last_level:
         if self.level == 12:
-                self.gameover = True
-            # You Won completely
+            self.gameover = True
+        # You Won completely
         else:
             self.level += 1
             self.grid = self.generate_grid(level=self.level)
@@ -100,6 +102,7 @@ class Evens(Game):
     """
     Class to hold logic for game for playing evens
     """
+
     def __init__(self, level=1):
         super(Evens, self).__init__(level)
         self.display_name = "Evens"
@@ -107,7 +110,7 @@ class Evens(Game):
 
     @property
     def level_title(self):
-        return f"Evens"
+        return "Evens"
 
     @property
     def message(self):
@@ -129,6 +132,7 @@ class Odds(Game):
     """
     Class to hold logic for game for playing Odds
     """
+
     def __init__(self, level=1):
         super(Odds, self).__init__(level)
         self.display_name = "Odds"
@@ -136,7 +140,7 @@ class Odds(Game):
 
     @property
     def level_title(self):
-        return f"Odds"
+        return "Odds"
 
     @property
     def message(self):
@@ -184,13 +188,14 @@ class Multiples(Game):
 
     def beat_level(self):
         """Take a game grid and check if all values left are even"""
-        no_more_multiples = np.all((self.grid[self.grid < (MAX_INT - 1)] % self.level) != 0)
+        no_more_multiples = np.all(
+            (self.grid[self.grid < (MAX_INT - 1)] % self.level) != 0
+        )
         return no_more_multiples
 
     @staticmethod
     def generate_grid(rows=5, cols=6, level=1):
-
-        num_right_answers = np.int((np.random.randint(4, 6) * .1) * (rows * cols))
+        num_right_answers = int((np.random.randint(4, 6) * 0.1) * (rows * cols))
         if rows <= 0:
             rows = 5
         if cols <= 0:
@@ -200,14 +205,13 @@ class Multiples(Game):
         grid = np.random.randint(low, high, size=(rows * cols))
 
         if rows * cols - np.count_nonzero(grid % level) < num_right_answers:
-            current_right_answers = (rows * cols - np.count_nonzero(grid % level))
+            current_right_answers = rows * cols - np.count_nonzero(grid % level)
             num_to_add = num_right_answers - current_right_answers
             while num_to_add > 0:
                 random_place = np.random.randint(0, rows * cols)
                 if grid[random_place] % level != 0:
                     multiple_of_level = np.random.randint(1, 12) * level
                     grid[random_place] = multiple_of_level
-                    num_to_add = num_to_add -1
+                    num_to_add = num_to_add - 1
 
         return grid.reshape((rows, cols))
-

@@ -22,6 +22,8 @@ class Enemy(pygame.sprite.Sprite):
     FRAME_DELTA = 0.12
 
     def __init__(self, color='purple', shape=(5, 6)):
+        print("Enemy Spawned")
+
         super().__init__()
         self.sprite_sheet = pygame.image.load(f'assets/images/{color}_ghost.png').convert()
         self.image = pygame.Surface((125, 125))
@@ -56,6 +58,7 @@ class Enemy(pygame.sprite.Sprite):
 
         # start off screen
         self.curr_x, self.curr_y = -1000, -1000
+        self.curr_x, self.curr_y = 0, 0
         self.dest_x, self.dest_y = self.curr_x, self.curr_y
         self.delta_x = self.delta_y = 0
 

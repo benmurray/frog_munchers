@@ -60,6 +60,8 @@ class Player(pygame.sprite.Sprite):
         return front_loop, left_loop, right_loop, up_loop, front_loop
 
     def update(self):
+        """Increase frame_num by the delta and cast that to in(). Use result to pick the
+        sprite in the *_loop"""
         self.frame_num += self.frame_delta
         if self.frame_num >= len(self.current_sprite_loop):
             self.frame_num = 0

@@ -3,7 +3,6 @@ import sys
 import os
 import pygame
 import time
-import numpy as np
 
 from EnemyManager import EnemyManager
 from defined_games import get_game, GameType
@@ -28,7 +27,12 @@ complete_level_fanfare = pygame.mixer.Sound("assets/sounds/tadah.ogg")
 gameover_music = pygame.mixer.Sound("assets/sounds/gameover.ogg")
 win_snd = pygame.mixer.Sound("assets/sounds/fanfare.wav")
 
+display_info = pygame.display.Info()
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
+if display_info.current_w > 1366 and display_info.current_h > 768:
+    screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
+else:
+    screen = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
 screen.fill(GREEN)
 clock = pygame.time.Clock()
 
@@ -70,7 +74,7 @@ def draw_grid(screen, grid):
     for row in range(rows):
         for col in range(cols):
             value = grid[row, col]
-            if value == np.iinfo(int).max:
+            if value == sys.maxsize:
                 continue
             cell_surf = cell_font.render(str(value), True, WHITE)
             cell_rect = cell_surf.get_rect()
@@ -309,6 +313,7 @@ def run_game_loop(chosen_game, lives=3, level=None):
         game.start_over(lives)
     else:
         game.start_over(lives, level)
+        print(f"Level = {level}")
     grid = game.grid
     draw_grid(screen, grid)
 

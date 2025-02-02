@@ -16,7 +16,10 @@ class EnemyManager:
         self.cool_down_time = 3
 
         self.enemies = []
-        self.level = level
+        if level is None:
+            self.level = 1
+        else:
+            self.level = level
 
     @property
     def level(self):

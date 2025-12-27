@@ -437,6 +437,7 @@ def run_game_loop(chosen_game: GameType, lives: int = 3, level: Optional[int] = 
             if game.beat_level():
                 show_game_win(screen, game.score)
             else:
+                display_message(f"You made to level {game.level} with a score of {game.score} !", wait=True)
                 show_game_over(screen)
         elif not running:
             pygame.display.quit()

@@ -21,6 +21,7 @@ grid_x_start = col_width = grid_y_start = row_height = 0
 
 eat_snd = pygame.mixer.Sound("assets/sounds/eat.ogg")
 wrong_snd = pygame.mixer.Sound("assets/sounds/wrong_answer.wav")
+caught_snd = pygame.mixer.Sound("assets/sounds/monster-attack.wav")
 ambient_music = pygame.mixer.Sound("assets/sounds/ambient.ogg")
 complete_level_fanfare = pygame.mixer.Sound("assets/sounds/tadah.ogg")
 gameover_music = pygame.mixer.Sound("assets/sounds/gameover.ogg")
@@ -390,7 +391,7 @@ def run_game_loop(chosen_game, lives=3, level=None):
         # Hero vs Enemy collision
         collided = [e for e in enemy_manager.enemies if hero.rect.colliderect(e.hitbox)]
         if collided:
-            wrong_snd.play()
+            caught_snd.play()
             game.lives -= 1
             if game.lives <= 0:
                 game.gameover = True

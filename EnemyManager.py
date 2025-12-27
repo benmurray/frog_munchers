@@ -50,12 +50,7 @@ class EnemyManager:
         if self.current_level > 0:
             if self._time_to_spawn(time_in_level):
                 new_enemy = Enemy(shape=self.grid_shape)
-                new_enemy.entry_time = time_in_level
-                new_enemy.spawn_time = time_in_level
-                new_enemy.entered = True
-                new_enemy.image.set_alpha(0)
-                self._place_on_random_perimeter_cell(new_enemy)
-                new_enemy.schedule_next_move(time_in_level)
+                self._place_offstage_and_enter(new_enemy, time_in_level)
                 self.enemies.append(new_enemy)
 
     def _update_enemies(self, time_in_level):
@@ -117,3 +112,35 @@ class EnemyManager:
             return
         row, col = random.choice(perimeter_cells)
         enemy.set_grid_position(row=row, col=col)
+
+    def _place_offstage_and_enter(self, enemy: Enemy, time_in_level: float):
+        """Spawn enemy just off-grid and animate entry onto a random perimeter cell."""
+        rows, cols = self.grid_shape
+        perimeter_cells = []
+        for c in range(cols):
+            perimeter_cells.append((0, c))
+            perimeter_cells.append((rows - 1, c))
+        for r in range(1, rows - 1):
+            perimeter_cells.append((r, 0))
+            perimeter_cells.append((r, cols - 1))
+
+        if not perimeter_cells:
+            return
+
+        dest_row, dest_col = random.choice(perimeter_cells)
+        start_row, start_col = dest_row, dest_col
+        if dest_row == 0:
+            start_row = -1
+        elif dest_row == rows - 1:
+            start_row = rows
+        elif dest_col == 0:
+            start_col = -1
+        elif dest_col == cols - 1:
+            start_col = cols
+
+        enemy.set_position_at_cell(row=start_row, col=start_col)
+        enemy.spawn_time = time_in_level
+        enemy.entered = True  # allow fade-in
+        enemy.image.set_alpha(0)
+        enemy._start_move(dest_row=dest_row, dest_col=dest_col, now_sec=time_in_level, leaving=False)
+        enemy.schedule_next_move(time_in_level + Enemy.MOVE_DURATION)

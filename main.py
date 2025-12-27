@@ -1,7 +1,9 @@
 import argparse
 import sys
-import pygame
 import time
+from typing import Any, Optional
+
+import pygame
 
 from EnemyManager import EnemyManager
 from defined_games import get_game, GameType
@@ -37,7 +39,7 @@ screen.fill(GREEN)
 clock = pygame.time.Clock()
 
 
-def draw_grid(screen, grid):
+def draw_grid(screen: pygame.Surface, grid: Any) -> None:
     """Draw a 5x6 grid"""
     global grid_x_start, col_width, grid_y_start, row_height
     rows, cols = grid.shape
@@ -118,7 +120,7 @@ def draw_offstage(screen: pygame.Surface) -> None:
     screen.blit(right, dest=(screen_width - (screen_width - width) / 2, 0))
 
 
-def show_level(scrn, level):
+def show_level(scrn: pygame.Surface, level: int) -> None:
     """Show level on main screen above the game grid"""
     lvl_y = 50
     lvl_x = 20
@@ -128,7 +130,7 @@ def show_level(scrn, level):
     scrn.blit(_surf, (lvl_x, lvl_y))
 
 
-def show_title(scrn, title_txt):
+def show_title(scrn: pygame.Surface, title_txt: str) -> None:
     """Show Title above game grid (i.e. Multiples of 2)"""
     thickness = 3
     title_padding = 4
@@ -154,7 +156,7 @@ def show_title(scrn, title_txt):
     scrn.blit(_surf, (_x, top_y + title_padding))
 
 
-def show_lives(screen, num_lives=3):
+def show_lives(screen: pygame.Surface, num_lives: int = 3) -> None:
     """Lives: @@@"""
     hero_image = pygame.image.load("assets/images/life_indicator.png").convert()
     width = hero_image.get_width()
@@ -178,7 +180,7 @@ def show_lives(screen, num_lives=3):
     screen.blit(lives_surface, dest=(w + text_surface.get_width(), h))
 
 
-def show_score(scrn, score):
+def show_score(scrn: pygame.Surface, score: int) -> None:
     """Show score underneath the game grid."""
     score_txt_y = 500 + grid_y_start + 20
     score_txt_x = 20
@@ -201,11 +203,11 @@ def show_score(scrn, score):
     scrn.blit(score_box, (score_txt_x + _surf.get_width(), score_txt_y))
 
 
-def show_game_win(scrn, score):
+def show_game_win(scrn: pygame.Surface, score: int) -> None:
     show_game_over(scrn, won=True, score=score)
 
 
-def show_game_over(scrn, won=False, score=0):
+def show_game_over(scrn: pygame.Surface, won: bool = False, score: int = 0) -> None:
     ambient_music.stop()
     scrn.fill((0, 0, 0))
 
@@ -256,7 +258,7 @@ def show_game_over(scrn, won=False, score=0):
     win_snd.stop()
 
 
-def display_message(msg, wait: bool = True):
+def display_message(msg: str, wait: bool = True) -> None:
     left = grid_x_start
     top = grid_y_start + 2 * row_height
     bgrnd_width = col_width * 6
@@ -316,7 +318,7 @@ def display_completed_level() -> None:
     ambient_music.play()
 
 
-def wait_for_any_key():
+def wait_for_any_key() -> None:
     time.sleep(1)
     waiting = True
     while waiting:
@@ -327,7 +329,7 @@ def wait_for_any_key():
     return
 
 
-def run_game_loop(chosen_game, lives=3, level=None):
+def run_game_loop(chosen_game: GameType, lives: int = 3, level: Optional[int] = None) -> None:
     game = get_game(chosen_game)
     if level is None:
         level = 1
@@ -434,7 +436,7 @@ def run_game_loop(chosen_game, lives=3, level=None):
             sys.exit()
 
 
-def start_game(debug=False):
+def start_game(debug: bool = False) -> None:
     pygame.display.set_caption(TITLE)
     while True:
         if debug:
@@ -450,11 +452,3 @@ parser.add_argument('-d', '--debug', action='store_true', help="Debug Mode")
 args = parser.parse_args()
 
 start_game(debug=args.debug)
-
-# Add Enemy
-"""
-Determine types - random, straight line, 80% follow muncher
-How many to put in each level
-How to enter and leave grid
-Develop simple AI for them
-"""

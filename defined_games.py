@@ -1,5 +1,5 @@
-import numpy as np
 import enum
+import numpy as np
 
 
 MAX_INT = np.iinfo(int).max
@@ -13,7 +13,7 @@ class GameType(enum.Enum):
     Multiples = 3
 
 
-def get_game(game_type, level=1):
+def get_game(game_type: "GameType", level: int = 1) -> "Game":
     if game_type == GameType.Odds:
         return Odds(level=level)
     elif game_type == GameType.Evens:
@@ -27,7 +27,7 @@ class Game:
     Parent class for all games
     """
 
-    def __init__(self, level=1):
+    def __init__(self, level: int = 1):
         self.grid = self.generate_grid(level=level)
         self.current_value = -999
         self.gameover = False
@@ -38,30 +38,30 @@ class Game:
         self.starting_level = level
 
     @property
-    def level_title(self):
+    def level_title(self) -> str:
         raise NotImplementedError
 
     @property
-    def message(self):
+    def message(self) -> str:
         raise NotImplementedError
 
-    def set_lives(self, lives):
+    def set_lives(self, lives: int) -> None:
         self.lives = lives
 
-    def start_over(self, lives, level=None):
+    def start_over(self, lives: int, level: int | None = None) -> None:
         if level is None:
             self.level = self.starting_level
         else:
             self.level = level
         self.lives = lives
 
-    def is_cell_populated(self, x, y):
+    def is_cell_populated(self, x: int, y: int) -> bool:
         if self.grid[y, x] == MAX_INT:
             return False
         else:
             return True
 
-    def munch_number(self, x, y):
+    def munch_number(self, x: int, y: int) -> bool:
         """Hero eats number, so set that cell value to BOGUS Value so its not displayed"""
         self.current_value = self.grid[y, x]
         self.grid[y, x] = MAX_INT
@@ -75,10 +75,10 @@ class Game:
                 self.gameover = True
             return False
 
-    def is_value_valid(self):
+    def is_value_valid(self) -> bool:
         raise NotImplementedError
 
-    def start_next_level(self):
+    def start_next_level(self) -> None:
         # if self.level > self.last_level:
         if self.level == 12:
             self.gameover = True
@@ -88,7 +88,7 @@ class Game:
             self.grid = self.generate_grid(level=self.level)
 
     @staticmethod
-    def generate_grid(rows=5, cols=6, level=1):
+    def generate_grid(rows: int = 5, cols: int = 6, level: int = 1):
         if rows <= 0:
             rows = 5
         if cols <= 0:
@@ -103,26 +103,26 @@ class Evens(Game):
     Class to hold logic for game for playing evens
     """
 
-    def __init__(self, level=1):
+    def __init__(self, level: int = 1):
         super(Evens, self).__init__(level)
         self.display_name = "Evens"
         self.description = "Find the even numbers! (Numbers divisible by 2)"
 
     @property
-    def level_title(self):
+    def level_title(self) -> str:
         return "Evens"
 
     @property
-    def message(self):
+    def message(self) -> str:
         return f"Look again! {self.current_value} is not an even number."
 
-    def is_value_valid(self):
+    def is_value_valid(self) -> bool:
         if self.current_value % 2 == 1:
             return False
         else:
             return True
 
-    def beat_level(self):
+    def beat_level(self) -> bool:
         """Take a game grid and check if all values left are odd"""
         are_all_odd = np.all((self.grid % 2) == 1)
         return are_all_odd
@@ -133,26 +133,26 @@ class Odds(Game):
     Class to hold logic for game for playing Odds
     """
 
-    def __init__(self, level=1):
+    def __init__(self, level: int = 1):
         super(Odds, self).__init__(level)
         self.display_name = "Odds"
         self.description = "Find the odds numbers! (Numbers NOT divisible by 2)"
 
     @property
-    def level_title(self):
+    def level_title(self) -> str:
         return "Odds"
 
     @property
-    def message(self):
+    def message(self) -> str:
         return f"Look again! {self.current_value} is not an odd number."
 
-    def is_value_valid(self):
+    def is_value_valid(self) -> bool:
         if self.current_value % 2 == 1:
             return True
         else:
             return False
 
-    def beat_level(self):
+    def beat_level(self) -> bool:
         """Take a game grid and check if all values left are even"""
         are_all_odd = np.all((self.grid[self.grid < (MAX_INT - 1)] % 2) == 0)
         return are_all_odd
@@ -163,30 +163,30 @@ class Multiples(Game):
     Class to hold logic for game for playing Odds
     """
 
-    def __init__(self, level=2):
+    def __init__(self, level: int = 2):
         super(Multiples, self).__init__(level)
         self.display_name = "Multiples"
         self.description = "Find Multiples of the Level!"
         self.level = level
 
     @property
-    def level_title(self):
+    def level_title(self) -> str:
         if self.level is not None:
             return f"{self.display_name} of {self.level}"
         else:
             return self.display_name
 
     @property
-    def message(self):
+    def message(self) -> str:
         return f"Look again! {self.current_value} is not a multiple of {self.level}."
 
-    def is_value_valid(self):
+    def is_value_valid(self) -> bool:
         if self.current_value % self.level == 0:
             return True
         else:
             return False
 
-    def beat_level(self):
+    def beat_level(self) -> bool:
         """Take a game grid and check if all values left are even"""
         no_more_multiples = np.all(
             (self.grid[self.grid < (MAX_INT - 1)] % self.level) != 0
@@ -194,7 +194,7 @@ class Multiples(Game):
         return no_more_multiples
 
     @staticmethod
-    def generate_grid(rows=5, cols=6, level=1):
+    def generate_grid(rows: int = 5, cols: int = 6, level: int = 1):
         num_right_answers = int((np.random.randint(4, 6) * 0.1) * (rows * cols))
         if rows <= 0:
             rows = 5

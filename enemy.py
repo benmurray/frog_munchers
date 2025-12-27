@@ -12,11 +12,13 @@
 
     THIS HASN"T BEEN TESTED AT ALL
 '''
+import random
+from typing import List, Optional, Tuple
+
 import pygame
 import settings
 import numpy as np
 from settings import Direction
-import random
 
 
 class Enemy(pygame.sprite.Sprite):
@@ -24,7 +26,7 @@ class Enemy(pygame.sprite.Sprite):
     SPAWN_FADE_DURATION = 0.1  # seconds
     MOVE_DURATION = 1.0  # seconds to move between cells (slightly slower)
 
-    def __init__(self, color='purple', shape=(5, 6)):
+    def __init__(self, color: str = 'purple', shape: Tuple[int, int] = (5, 6)) -> None:
         super().__init__()
         self.sprite_sheet = pygame.image.load(f'assets/images/{color}_ghost.png').convert_alpha()
         self.image = pygame.Surface((125, 125))
@@ -78,7 +80,7 @@ class Enemy(pygame.sprite.Sprite):
         self.move_dest_pos = (0.0, 0.0)
         self.move_dest_cell = (self.y, self.x)
 
-    def create_loops(self):
+    def create_loops(self) -> Tuple[List[pygame.Surface], List[pygame.Surface], List[pygame.Surface], List[pygame.Surface], List[pygame.Surface]]:
         front1 = pygame.Surface((125, 125))
         front1.blit(self.sprite_sheet, dest=(0, 0), area=(0, 0, 125, 125))
         front2 = pygame.Surface((125, 125))
@@ -117,7 +119,7 @@ class Enemy(pygame.sprite.Sprite):
 
         return front_loop, left_loop, right_loop, up_loop, front_loop
 
-    def update(self, current_time_sec: float):
+    def update(self, current_time_sec: float) -> None:
         """Called each iteration of game loop."""
         self.frame_num += self.frame_delta
         if self.frame_num >= len(self.current_sprite_loop):
@@ -126,7 +128,7 @@ class Enemy(pygame.sprite.Sprite):
         self.image = pygame.transform.scale(self.current_sprite_loop[int(self.frame_num)], (125, 125))
         self._update_move(current_time_sec)
 
-    def update_position(self, direction):
+    def update_position(self, direction: Direction) -> None:
         if self.moving:
             return
         else:
@@ -158,11 +160,11 @@ class Enemy(pygame.sprite.Sprite):
         self.delta_x = delta_x
         self.delta_y = delta_y
 
-    def set_destination(self, x, y):
+    def set_destination(self, x: int, y: int) -> None:
         self.dest_x = x * self.col_width + self.curr_x
         self.dest_y = y * self.row_height + self.curr_y
 
-    def move(self):
+    def move(self) -> None:
         if self.delta_x == 0 and self.delta_y == 0:
             self.moving = False
             self.move_count = 0
@@ -218,11 +220,11 @@ class Enemy(pygame.sprite.Sprite):
 
         self.rect.move_ip(move_x, move_y)
 
-    def set_grid_position(self, row: int, col: int):
+    def set_grid_position(self, row: int, col: int) -> None:
         """Place the enemy at a given grid cell (row, col)."""
         self.set_position_at_cell(row=row, col=col)
 
-    def set_position_at_cell(self, row: int, col: int):
+    def set_position_at_cell(self, row: int, col: int) -> None:
         """Place the enemy at a given cell coordinate (can be off-grid for entry/exit)."""
         self.x = col
         self.y = row
@@ -236,7 +238,7 @@ class Enemy(pygame.sprite.Sprite):
         self.dest_x, self.dest_y = self.curr_x, self.curr_y
         self._sync_hitbox()
 
-    def apply_fade(self, current_time_sec: float):
+    def apply_fade(self, current_time_sec: float) -> None:
         """Fade in based on time since spawn."""
         if not self.entered:
             return
@@ -245,11 +247,11 @@ class Enemy(pygame.sprite.Sprite):
         alpha = int(255 * progress)
         self.image.set_alpha(alpha)
 
-    def schedule_next_move(self, now_sec: float):
+    def schedule_next_move(self, now_sec: float) -> None:
         """Pick a random interval between 2-5 seconds for the next move."""
         self.next_move_at = now_sec + random.uniform(2, 5)
 
-    def pick_adjacent_or_leave(self):
+    def pick_adjacent_or_leave(self) -> Optional[Tuple[int, int, bool]]:
         """Choose a random orthogonally adjacent cell; allow leaving when on perimeter."""
         rows, cols = self.grid.shape
         options = []
@@ -273,7 +275,7 @@ class Enemy(pygame.sprite.Sprite):
             return None
         return random.choice(options)
 
-    def move_adjacent_or_leave(self, now_sec: float):
+    def move_adjacent_or_leave(self, now_sec: float) -> Optional[bool]:
         """Move to an orthogonally adjacent cell within the grid."""
         dest = self.pick_adjacent_or_leave()
         if dest is None:
@@ -296,7 +298,7 @@ class Enemy(pygame.sprite.Sprite):
         self._set_direction_loop(dest_row, dest_col)
         return True
 
-    def _update_move(self, current_time_sec: float):
+    def _update_move(self, current_time_sec: float) -> None:
         """Interpolate movement if currently moving."""
         if not self.moving:
             return
@@ -325,7 +327,7 @@ class Enemy(pygame.sprite.Sprite):
             self.leaving = False
             self.current_sprite_loop = self.idle
 
-    def _set_direction_loop(self, dest_row: int, dest_col: int):
+    def _set_direction_loop(self, dest_row: int, dest_col: int) -> None:
         """Switch sprite loop based on intended move direction."""
         if dest_col < self.x:
             self.current_sprite_loop = self.left
@@ -338,6 +340,6 @@ class Enemy(pygame.sprite.Sprite):
         else:
             self.current_sprite_loop = self.idle
 
-    def _sync_hitbox(self):
+    def _sync_hitbox(self) -> None:
         """Keep hitbox aligned and slightly smaller than the sprite rect."""
         self.hitbox = self.rect.inflate(-40, -40)

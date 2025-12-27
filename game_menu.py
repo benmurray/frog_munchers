@@ -50,7 +50,7 @@ def show_menu_screen(screen):
                                  )
     my_theme.set_background_color_opacity(0.7)
 
-    menu = pygame_menu.Menu(f'Welcome to {settings.TITLE}',
+    menu = pygame_menu.Menu(f'{settings.TITLE}',
                             width=screen.get_width() * 0.6,
                             height=screen.get_height() * 0.7,
                             theme=my_theme)

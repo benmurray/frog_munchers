@@ -8,7 +8,7 @@ class Direction(Enum):
     RIGHT = 4
 
 
-TITLE = 'Frog Munchers!'
+TITLE = 'Farrar Frog Munchers!'
 SCREEN_WIDTH = 1024
 SCREEN_HEIGHT = 768
 BOARD_WIDTH = 900

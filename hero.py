@@ -1,5 +1,6 @@
 import pygame
 import numpy as np
+from typing import Any, Sequence, Tuple
 
 import settings
 
@@ -10,7 +11,7 @@ GREEN = (0, 255, 0)
 
 class Hero(pygame.sprite.Sprite):
 
-    def __init__(self, display, shape=(5, 6), game=None):
+    def __init__(self, display: pygame.Surface, shape: Tuple[int, int] = (5, 6), game: Any = None) -> None:
         super(Hero, self).__init__()
         self.build_images()
         self.moving = False
@@ -41,7 +42,7 @@ class Hero(pygame.sprite.Sprite):
         self.dest_x, self.dest_y = self.curr_x, self.curr_y
         self.delta_x = self.delta_y = 0
 
-    def build_images(self):
+    def build_images(self) -> None:
         hero_sprites = pygame.image.load('assets/images/hero_sprite.png').convert()
         self.standing_hero = pygame.Surface((115, 100))
         # width of 115 and a height of 100
@@ -59,19 +60,19 @@ class Hero(pygame.sprite.Sprite):
         self.scared = pygame.Surface((115, 100))
         self.scared.blit(hero_sprites, dest=(0, 0), area=(0, 401, 115, 100))
 
-    def close_mouth(self):
+    def close_mouth(self) -> None:
         self.surf = pygame.transform.scale(self.standing_hero, (85, 80))
 
-    def open_mouth(self):
+    def open_mouth(self) -> None:
         self.surf = pygame.transform.scale(self.mouth_open, (85, 80))
 
-    def move_one(self):
+    def move_one(self) -> None:
         self.surf = pygame.transform.scale(self.moving_right1, (85, 80))
 
-    def move_two(self):
+    def move_two(self) -> None:
         self.surf = pygame.transform.scale(self.moving_right2, (85, 80))
 
-    def update_position(self, pressed_keys):
+    def update_position(self, pressed_keys: Sequence[bool]) -> None:
         if self.moving:
             return
         else:
@@ -103,17 +104,17 @@ class Hero(pygame.sprite.Sprite):
         self.delta_x = delta_x
         self.delta_y = delta_y
 
-    def get_start_x_y(self):
+    def get_start_x_y(self) -> Tuple[int, int]:
         return self.x * self.col_width, self.y * self.row_height
 
-    def set_destination(self, x, y):
+    def set_destination(self, x: int, y: int) -> None:
         self.dest_x = x * self.col_width + self.curr_x
         self.dest_y = y * self.row_height + self.curr_y
 
-    def update(self):
+    def update(self) -> None:
         self.move()
 
-    def move(self):
+    def move(self) -> None:
         if self.delta_x == 0 and self.delta_y == 0:
             self.moving = False
             self.move_count = 0

@@ -1,3 +1,6 @@
+from typing import List, Tuple
+
+import pygame
 import settings
 import random
 from enemy import Enemy
@@ -5,7 +8,7 @@ from enemy import Enemy
 
 class EnemyManager:
 
-    def __init__(self, screen, level: int = 1, grid_shape=(5, 6)):
+    def __init__(self, screen: pygame.Surface, level: int = 1, grid_shape: Tuple[int, int] = (5, 6)) -> None:
         assert(screen is not None)
         self.screen = screen
         self.spawn_rules = settings.ENEMY_SPAWN_RULES
@@ -18,7 +21,7 @@ class EnemyManager:
         self.last_spawn_time = 0
         self.cool_down_time = 3
 
-        self.enemies = []
+        self.enemies: List[Enemy] = []
         if level is None:
             self.level = 1
         else:
@@ -34,14 +37,14 @@ class EnemyManager:
         self.reset_level()
 
     # Called once per frame
-    def update(self, time_in_level: int = 0):
+    def update(self, time_in_level: float = 0.0) -> None:
         self._check_if_spawn(time_in_level)
         self._update_enemies(time_in_level)
 
-    def clear_enemies(self):
+    def clear_enemies(self) -> None:
         self.enemies = []
 
-    def _check_if_spawn(self, time_in_level):
+    def _check_if_spawn(self, time_in_level: float) -> None:
         """_summary_
 
         Args:
@@ -53,7 +56,7 @@ class EnemyManager:
                 self._place_offstage_and_enter(new_enemy, time_in_level)
                 self.enemies.append(new_enemy)
 
-    def _update_enemies(self, time_in_level):
+    def _update_enemies(self, time_in_level: float) -> None:
         remaining = []
         for enemy in self.enemies:
             enemy.update(time_in_level)
@@ -69,7 +72,7 @@ class EnemyManager:
             remaining.append(enemy)
         self.enemies = remaining
 
-    def _time_to_spawn(self, time_in_level) -> bool:
+    def _time_to_spawn(self, time_in_level: float) -> bool:
         in_cool_down = (time_in_level - self.last_spawn_time) > self.cool_down_time
 
         if in_cool_down and len(self.enemies) < self.max_enemies_at_level:
@@ -86,7 +89,7 @@ class EnemyManager:
         self.last_spawn_time = -(self.cool_down_time + 1)  # allow immediate spawn if desired
         self.enemies = []
 
-    def _get_spawn_rule(self, level: int) -> dict:
+    def _get_spawn_rule(self, level: int) -> dict[str, int]:
         # Look up per-level rule; fall back to default or computed rule
         rule = self.spawn_rules.get(level)
         if rule is None:
@@ -96,7 +99,7 @@ class EnemyManager:
             return {"max_enemies": level // 3, "cooldown": 3}
         return rule
 
-    def _place_on_random_perimeter_cell(self, enemy: Enemy):
+    def _place_on_random_perimeter_cell(self, enemy: Enemy) -> None:
         rows, cols = self.grid_shape
         perimeter_cells = []
         # top and bottom rows
@@ -113,7 +116,7 @@ class EnemyManager:
         row, col = random.choice(perimeter_cells)
         enemy.set_grid_position(row=row, col=col)
 
-    def _place_offstage_and_enter(self, enemy: Enemy, time_in_level: float):
+    def _place_offstage_and_enter(self, enemy: Enemy, time_in_level: float) -> None:
         """Spawn enemy just off-grid and animate entry onto a random perimeter cell."""
         rows, cols = self.grid_shape
         perimeter_cells = []

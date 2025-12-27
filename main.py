@@ -353,6 +353,7 @@ def run_game_loop(chosen_game: GameType, lives: int = 3, level: Optional[int] = 
     while running:
         if game.beat_level():
             display_completed_level()
+            hero.go_to_start_position()
             game.start_next_level()
             # update the time of level start
             time_at_level_start = pygame.time.get_ticks() / 1000

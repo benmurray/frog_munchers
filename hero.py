@@ -23,8 +23,13 @@ class Hero(pygame.sprite.Sprite):
         self.rect = self.surf.get_rect()
         self.screen = display
         self.grid = np.zeros(shape=shape)
-        self.x = shape[1] // 2
-        self.y = shape[0] // 2
+
+        self.shape = shape
+        self.go_to_start_position()
+
+    def go_to_start_position(self) -> None:
+        self.x = self.shape[1] // 2
+        self.y = self.shape[0] // 2
 
         width = settings.BOARD_WIDTH
         height = settings.BOARD_HEIGHT
@@ -41,6 +46,34 @@ class Hero(pygame.sprite.Sprite):
         self.curr_x, self.curr_y = self.get_start_x_y()
         self.dest_x, self.dest_y = self.curr_x, self.curr_y
         self.delta_x = self.delta_y = 0
+
+    def build_images(self) -> None:
+        hero_sprites = pygame.image.load('assets/images/hero_sprite.png').convert()
+        self.standing_hero = pygame.Surface((115, 100))
+        # width of 115 and a height of 100
+        self.standing_hero.blit(hero_sprites, dest=(0, 0), area=(0, 0, 115, 100))
+
+        self.moving_right1 = pygame.Surface((115, 100))
+        self.moving_right1.blit(hero_sprites, dest=(0, 0), area=(0, 101, 115, 100))
+
+        self.moving_right2 = pygame.Surface((115, 100))
+        self.moving_right2.blit(hero_sprites, dest=(0, 0), area=(0, 201, 115, 100))
+
+        self.mouth_open = pygame.Surface((115, 100))
+        self.mouth_open.blit(hero_sprites, dest=(0, 0), area=(0, 301, 115, 100))
+
+        self.scared = pygame.Surface((115, 100))
+        self.scared.blit(hero_sprites, dest=(0, 0), area=(0, 401, 115, 100))
+
+    def close_mouth(self) -> None:
+        self.surf = pygame.transform.scale(self.standing_hero, (85, 80))
+
+    def open_mouth(self) -> None:
+        self.surf = pygame.transform.scale(self.mouth_open, (85, 80))
+
+    def move_one(self) -> None:
+        self.surf = pygame.transform.scale(self.moving_right1, (85, 80))
+
 
     def build_images(self) -> None:
         hero_sprites = pygame.image.load('assets/images/hero_sprite.png').convert()

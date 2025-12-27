@@ -1,5 +1,3 @@
-import time
-import pygame
 import settings
 from enemy import Enemy
 

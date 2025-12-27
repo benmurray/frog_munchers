@@ -99,7 +99,6 @@ def draw_offstage(screen: pygame.Surface) -> None:
     """
     global grid_x_start, grid_y_start
     width = 900
-    height = 500  # These need to be the same as in draw_grid (for now)
     screen_width = int(screen.get_width())
     screen_height = int(screen.get_height())
     top = pygame.Surface((screen_width, grid_y_start))
@@ -134,10 +133,11 @@ def show_title(scrn, title_txt):
     # Get Title and title width to center title
     start_from = scrn.get_width() // 3
     line_w = int(scrn.get_width() // 2)
-    top_line = pygame.draw.line(
+    # top and bottom lines
+    pygame.draw.line(
         scrn, ORANGE, (start_from, top_y), (start_from + line_w, top_y), thickness
     )
-    bottom_line = pygame.draw.line(
+    pygame.draw.line(
         scrn, ORANGE, (start_from, bottom_y), (start_from + line_w, bottom_y), thickness
     )
 
@@ -213,7 +213,6 @@ def show_game_over(scrn, won=False, score=0):
     score = text_font_64.render(f"Score = {score}", True, (255, 0, 0))
     score_rect = score.get_rect()
 
-    text_font = pygame.font.Font("assets/fonts/auto_digital.ttf", 32)
     instructions_text = text_font_32.render(
         "Press (any key) to Continue", True, (255, 0, 0)
     )
@@ -278,6 +277,18 @@ def display_message(msg):
         ),
     )
     pygame.display.update()
+
+    # Hold the message on screen until the player clicks or presses a key
+    waiting = True
+    while waiting:
+        for event in pygame.event.get():
+            if event.type in (KEYDOWN, pygame.MOUSEBUTTONDOWN):
+                waiting = False
+                break
+            if event.type == QUIT:
+                pygame.display.quit()
+                sys.exit()
+        clock.tick(FRAME_RATE)
 
 
 def display_completed_level():

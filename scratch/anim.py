@@ -1,4 +1,5 @@
-import pygame, sys
+import pygame
+import sys
 
 
 class Player(pygame.sprite.Sprite):

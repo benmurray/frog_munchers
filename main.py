@@ -28,7 +28,9 @@ caught_snd = pygame.mixer.Sound("assets/sounds/monster-attack.wav")
 ambient_music = pygame.mixer.Sound("assets/sounds/ambient.ogg")
 complete_level_fanfare = pygame.mixer.Sound("assets/sounds/tadah.ogg")
 gameover_music = pygame.mixer.Sound("assets/sounds/gameover.ogg")
+game_over_snd = pygame.mixer.Sound("assets/sounds/game_over.wav")
 win_snd = pygame.mixer.Sound("assets/sounds/fanfare.wav")
+outro_snd = pygame.mixer.Sound("assets/sounds/outro.wav")
 
 display_info = pygame.display.Info()
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
@@ -357,7 +359,6 @@ def run_game_loop(chosen_game: GameType, lives: int = 3, level: Optional[int] = 
     running = True
     while running:
 
-
         if game.beat_level():
             display_completed_level()
             hero.go_to_start_position()
@@ -439,8 +440,10 @@ def run_game_loop(chosen_game: GameType, lives: int = 3, level: Optional[int] = 
             if game.beat_level():
                 show_game_win(screen, game.score, wait=False)
             else:
+                game_over_snd.play()
                 display_message(f"You made to level {game.level} with a score of {game.score} !", wait=True)
                 show_game_over(screen, score=game.score, wait=False)
+            outro_snd.play()
             show_high_scores(screen, game.score)
         elif not running:
             pygame.display.quit()

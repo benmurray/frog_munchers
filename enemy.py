@@ -28,6 +28,13 @@ class Enemy(pygame.sprite.Sprite):
 
     def __init__(self, color: str = 'purple', shape: Tuple[int, int] = (5, 6)) -> None:
         super().__init__()
+        self.color = color
+        self.behavior = {
+            "purple": "straight",
+            "green": "in_out",
+            "red": "random",
+            "blue": "chase",
+        }.get(color, "random")
         self.sprite_sheet = pygame.image.load(f'assets/images/{color}_ghost.png').convert_alpha()
         self.image = pygame.Surface((125, 125))
         self.image.blit(self.sprite_sheet, dest=(0, 0), area=(0, 0, 125, 125))
@@ -79,6 +86,8 @@ class Enemy(pygame.sprite.Sprite):
         self.move_start_pos = (0.0, 0.0)
         self.move_dest_pos = (0.0, 0.0)
         self.move_dest_cell = (self.y, self.x)
+        self.heading: Optional[Tuple[int, int]] = None
+        self.entry_heading: Optional[Tuple[int, int]] = None
 
     def create_loops(self) -> Tuple[List[pygame.Surface], List[pygame.Surface], List[pygame.Surface], List[pygame.Surface], List[pygame.Surface]]:
         front1 = pygame.Surface((125, 125))
@@ -275,8 +284,52 @@ class Enemy(pygame.sprite.Sprite):
             return None
         return random.choice(options)
 
-    def move_adjacent_or_leave(self, now_sec: float) -> Optional[bool]:
-        """Move to an orthogonally adjacent cell within the grid."""
+    def move_by_behavior(self, now_sec: float, hero_pos: Optional[Tuple[int, int]]) -> Optional[bool]:
+        """Move according to color behavior."""
+        if self.behavior == "straight":
+            if not self.heading:
+                return None
+            dy, dx = self.heading
+            dest_row = self.y + dy
+            dest_col = self.x + dx
+            leaving = self._is_off_grid(dest_row, dest_col)
+            return self._start_move(dest_row=dest_row, dest_col=dest_col, now_sec=now_sec, leaving=leaving)
+
+        if self.behavior == "in_out":
+            if not self.entry_heading:
+                return None
+            dy, dx = self.entry_heading
+            dest_row = self.y - dy
+            dest_col = self.x - dx
+            leaving = self._is_off_grid(dest_row, dest_col)
+            return self._start_move(dest_row=dest_row, dest_col=dest_col, now_sec=now_sec, leaving=leaving)
+
+        if self.behavior == "chase":
+            if hero_pos is None:
+                return self._random_move(now_sec)
+            hero_row, hero_col = hero_pos
+            diff_row = hero_row - self.y
+            diff_col = hero_col - self.x
+            dy = 0
+            dx = 0
+            if abs(diff_row) >= abs(diff_col):
+                dy = 1 if diff_row > 0 else -1 if diff_row < 0 else 0
+            else:
+                dx = 1 if diff_col > 0 else -1 if diff_col < 0 else 0
+
+            # Ensure move stays on grid; fallback to random if blocked
+            target_row = self.y + dy
+            target_col = self.x + dx
+            if dy == 0 and dx == 0:
+                return None
+            if self._is_off_grid(target_row, target_col):
+                return self._random_move(now_sec)
+            return self._start_move(dest_row=target_row, dest_col=target_col, now_sec=now_sec, leaving=False)
+
+        # default / red: random movement with possible leave
+        return self._random_move(now_sec)
+
+    def _random_move(self, now_sec: float) -> Optional[bool]:
         dest = self.pick_adjacent_or_leave()
         if dest is None:
             return None
@@ -295,6 +348,11 @@ class Enemy(pygame.sprite.Sprite):
             self.grid_x_start + (dest_col * self.col_width) + (self.col_width - self.rect.w) // 2,
             self.grid_y_start + (dest_row * self.row_height) + (self.row_height - self.rect.h) // 2,
         )
+        dy = max(-1, min(1, dest_row - self.y))
+        dx = max(-1, min(1, dest_col - self.x))
+        self.heading = (dy, dx)
+        if self.entry_heading is None and not leaving:
+            self.entry_heading = self.heading
         self._set_direction_loop(dest_row, dest_col)
         return True
 
@@ -343,3 +401,7 @@ class Enemy(pygame.sprite.Sprite):
     def _sync_hitbox(self) -> None:
         """Keep hitbox aligned and slightly smaller than the sprite rect."""
         self.hitbox = self.rect.inflate(-40, -40)
+
+    def _is_off_grid(self, row: int, col: int) -> bool:
+        rows, cols = self.grid.shape
+        return row < 0 or row >= rows or col < 0 or col >= cols

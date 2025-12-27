@@ -1,9 +1,12 @@
-from typing import List, Tuple
+from typing import List, Tuple, Optional, TYPE_CHECKING
 
 import pygame
 import settings
 import random
 from enemy import Enemy
+
+if TYPE_CHECKING:
+    from hero import Hero
 
 
 class EnemyManager:
@@ -37,9 +40,9 @@ class EnemyManager:
         self.reset_level()
 
     # Called once per frame
-    def update(self, time_in_level: float = 0.0) -> None:
+    def update(self, time_in_level: float = 0.0, hero: Optional["Hero"] = None) -> None:
         self._check_if_spawn(time_in_level)
-        self._update_enemies(time_in_level)
+        self._update_enemies(time_in_level, hero)
 
     def clear_enemies(self) -> None:
         self.enemies = []
@@ -52,17 +55,21 @@ class EnemyManager:
         """
         if self.current_level > 0:
             if self._time_to_spawn(time_in_level):
-                new_enemy = Enemy(shape=self.grid_shape)
+                color = random.choice(["purple", "green", "red", "blue"])
+                new_enemy = Enemy(color=color, shape=self.grid_shape)
                 self._place_offstage_and_enter(new_enemy, time_in_level)
                 self.enemies.append(new_enemy)
 
-    def _update_enemies(self, time_in_level: float) -> None:
+    def _update_enemies(self, time_in_level: float, hero: Optional["Hero"]) -> None:
         remaining = []
         for enemy in self.enemies:
             enemy.update(time_in_level)
             enemy.apply_fade(time_in_level)
             if time_in_level >= enemy.next_move_at and not enemy.moving and not enemy.has_left_grid:
-                moved = enemy.move_adjacent_or_leave(time_in_level)
+                hero_pos = None
+                if hero is not None:
+                    hero_pos = (hero.y, hero.x)
+                moved = enemy.move_by_behavior(time_in_level, hero_pos)
                 if moved:
                     if not enemy.leaving:
                         enemy.schedule_next_move(time_in_level)

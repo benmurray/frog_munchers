@@ -392,7 +392,7 @@ def run_game_loop(chosen_game: GameType, lives: int = 3, level: Optional[int] = 
                 running = False
 
         hero.update()
-        enemy_manager.update(time_in_level)
+        enemy_manager.update(time_in_level, hero)
 
         # Hero vs Enemy collision
         collided = [e for e in enemy_manager.enemies if hero.rect.colliderect(e.hitbox)]

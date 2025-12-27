@@ -55,7 +55,7 @@ class EnemyManager:
         """
         if self.current_level > 0:
             if self._time_to_spawn(time_in_level):
-                color = random.choice(["purple", "green", "red", "blue"])
+                color = random.choice(self._colors_for_level())
                 new_enemy = Enemy(color=color, shape=self.grid_shape)
                 self._place_offstage_and_enter(new_enemy, time_in_level)
                 self.enemies.append(new_enemy)
@@ -103,7 +103,7 @@ class EnemyManager:
             rule = self.spawn_rules.get("default")
         if rule is None:
             # fallback to prior behavior
-            return {"max_enemies": level // 3, "cooldown": 3}
+            return {"max_enemies": level // 3, "cooldown": 3, "difficulty": 1}
         return rule
 
     def _place_on_random_perimeter_cell(self, enemy: Enemy) -> None:
@@ -122,6 +122,20 @@ class EnemyManager:
             return
         row, col = random.choice(perimeter_cells)
         enemy.set_grid_position(row=row, col=col)
+
+    def _colors_for_level(self) -> List[str]:
+        rule = self._get_spawn_rule(self.current_level)
+        difficulty = rule.get("difficulty", 1)
+        palette = []
+        if difficulty >= 1:
+            palette.append("green")
+        if difficulty >= 2:
+            palette.append("purple")
+        if difficulty >= 3:
+            palette.append("red")
+        if difficulty >= 4:
+            palette.append("blue")
+        return palette or ["green"]
 
     def _place_offstage_and_enter(self, enemy: Enemy, time_in_level: float) -> None:
         """Spawn enemy just off-grid and animate entry onto a random perimeter cell."""

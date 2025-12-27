@@ -23,10 +23,11 @@ GREEN2 = "#006118"
 # Enemy spawn tuning per level. Adjust max enemies and spawn cooldown (seconds) here.
 # If a level is missing, default rules are used.
 ENEMY_SPAWN_RULES = {
-    "default": {"max_enemies": 0, "cooldown": 3},
-    1: {"max_enemies": 1, "cooldown": 1},
-    2: {"max_enemies": 1, "cooldown": 4},
-    3: {"max_enemies": 1, "cooldown": 3},
-    4: {"max_enemies": 2, "cooldown": 3},
-    5: {"max_enemies": 2, "cooldown": 2},
+    # difficulty: 1=green, 2=green+purple, 3=green+purple+red, 4=all (blue added)
+    "default": {"max_enemies": 3, "cooldown": 3, "difficulty": 4},
+    1: {"max_enemies": 1, "cooldown": 1, "difficulty": 1},
+    2: {"max_enemies": 1, "cooldown": 4, "difficulty": 2},
+    3: {"max_enemies": 1, "cooldown": 3, "difficulty": 3},
+    4: {"max_enemies": 2, "cooldown": 3, "difficulty": 4},
+    5: {"max_enemies": 2, "cooldown": 2, "difficulty": 4},
 }

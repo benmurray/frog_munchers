@@ -1,19 +1,5 @@
-'''Enemies
-- appear by entering a perimeter square
-- move at a specified time interval
-- determine where they are going next
-
- - Levels determine
-    - What level an enemy can enter
-    - What time on that level they can enter
-    - If more than one enemy can appear
-    - The types of enemies allowed
-
-
-    THIS HASN"T BEEN TESTED AT ALL
-'''
 import random
-from typing import List, Optional, Tuple
+from typing import Callable, Dict, List, Optional, Tuple
 
 import pygame
 import settings
@@ -88,6 +74,12 @@ class Enemy(pygame.sprite.Sprite):
         self.move_dest_cell = (self.y, self.x)
         self.heading: Optional[Tuple[int, int]] = None
         self.entry_heading: Optional[Tuple[int, int]] = None
+        self._behavior_handlers: Dict[str, Callable[[float, Optional[Tuple[int, int]]], Optional[bool]]] = {
+            "straight": self._move_straight,
+            "in_out": self._move_in_out,
+            "chase": self._move_chase,
+            "random": self._random_move,
+        }
 
     def create_loops(self) -> Tuple[List[pygame.Surface], List[pygame.Surface], List[pygame.Surface], List[pygame.Surface], List[pygame.Surface]]:
         front1 = pygame.Surface((125, 125))
@@ -286,50 +278,49 @@ class Enemy(pygame.sprite.Sprite):
 
     def move_by_behavior(self, now_sec: float, hero_pos: Optional[Tuple[int, int]]) -> Optional[bool]:
         """Move according to color behavior."""
-        if self.behavior == "straight":
-            if not self.heading:
-                return None
-            dy, dx = self.heading
-            dest_row = self.y + dy
-            dest_col = self.x + dx
-            leaving = self._is_off_grid(dest_row, dest_col)
-            return self._start_move(dest_row=dest_row, dest_col=dest_col, now_sec=now_sec, leaving=leaving)
+        handler = self._behavior_handlers.get(self.behavior, self._random_move)
+        return handler(now_sec, hero_pos)
 
-        if self.behavior == "in_out":
-            if not self.entry_heading:
-                return None
-            dy, dx = self.entry_heading
-            dest_row = self.y - dy
-            dest_col = self.x - dx
-            leaving = self._is_off_grid(dest_row, dest_col)
-            return self._start_move(dest_row=dest_row, dest_col=dest_col, now_sec=now_sec, leaving=leaving)
+    def _move_straight(self, now_sec: float, _: Optional[Tuple[int, int]]) -> Optional[bool]:
+        if not self.heading:
+            return None
+        dy, dx = self.heading
+        dest_row = self.y + dy
+        dest_col = self.x + dx
+        leaving = self._is_off_grid(dest_row, dest_col)
+        return self._start_move(dest_row=dest_row, dest_col=dest_col, now_sec=now_sec, leaving=leaving)
 
-        if self.behavior == "chase":
-            if hero_pos is None:
-                return self._random_move(now_sec)
-            hero_row, hero_col = hero_pos
-            diff_row = hero_row - self.y
-            diff_col = hero_col - self.x
-            dy = 0
-            dx = 0
-            if abs(diff_row) >= abs(diff_col):
-                dy = 1 if diff_row > 0 else -1 if diff_row < 0 else 0
-            else:
-                dx = 1 if diff_col > 0 else -1 if diff_col < 0 else 0
+    def _move_in_out(self, now_sec: float, _: Optional[Tuple[int, int]]) -> Optional[bool]:
+        if not self.entry_heading:
+            return None
+        dy, dx = self.entry_heading
+        dest_row = self.y - dy
+        dest_col = self.x - dx
+        leaving = self._is_off_grid(dest_row, dest_col)
+        return self._start_move(dest_row=dest_row, dest_col=dest_col, now_sec=now_sec, leaving=leaving)
 
-            # Ensure move stays on grid; fallback to random if blocked
-            target_row = self.y + dy
-            target_col = self.x + dx
-            if dy == 0 and dx == 0:
-                return None
-            if self._is_off_grid(target_row, target_col):
-                return self._random_move(now_sec)
-            return self._start_move(dest_row=target_row, dest_col=target_col, now_sec=now_sec, leaving=False)
+    def _move_chase(self, now_sec: float, hero_pos: Optional[Tuple[int, int]]) -> Optional[bool]:
+        if hero_pos is None:
+            return self._random_move(now_sec, None)
+        hero_row, hero_col = hero_pos
+        diff_row = hero_row - self.y
+        diff_col = hero_col - self.x
+        dy = 0
+        dx = 0
+        if abs(diff_row) >= abs(diff_col):
+            dy = 1 if diff_row > 0 else -1 if diff_row < 0 else 0
+        else:
+            dx = 1 if diff_col > 0 else -1 if diff_col < 0 else 0
 
-        # default / red: random movement with possible leave
-        return self._random_move(now_sec)
+        target_row = self.y + dy
+        target_col = self.x + dx
+        if dy == 0 and dx == 0:
+            return None
+        if self._is_off_grid(target_row, target_col):
+            return self._random_move(now_sec, None)
+        return self._start_move(dest_row=target_row, dest_col=target_col, now_sec=now_sec, leaving=False)
 
-    def _random_move(self, now_sec: float) -> Optional[bool]:
+    def _random_move(self, now_sec: float, _: Optional[Tuple[int, int]] = None) -> Optional[bool]:
         dest = self.pick_adjacent_or_leave()
         if dest is None:
             return None

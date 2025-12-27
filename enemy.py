@@ -22,7 +22,7 @@ import random
 class Enemy(pygame.sprite.Sprite):
     FRAME_DELTA = 0.12
     SPAWN_FADE_DURATION = 0.1  # seconds
-    MOVE_DURATION = 0.8  # seconds to move between cells (slightly slower)
+    MOVE_DURATION = 1.0  # seconds to move between cells (slightly slower)
 
     def __init__(self, color='purple', shape=(5, 6)):
         super().__init__()

@@ -256,7 +256,7 @@ def show_game_over(scrn, won=False, score=0):
     win_snd.stop()
 
 
-def display_message(msg):
+def display_message(msg, wait: bool = True):
     left = grid_x_start
     top = grid_y_start + 2 * row_height
     bgrnd_width = col_width * 6
@@ -285,7 +285,7 @@ def display_message(msg):
     pygame.display.update()
 
     # Hold the message on screen until the player clicks or presses a key
-    waiting = True
+    waiting = wait
     while waiting:
         for event in pygame.event.get():
             if event.type in (KEYDOWN, pygame.MOUSEBUTTONDOWN):
@@ -297,18 +297,22 @@ def display_message(msg):
         clock.tick(FRAME_RATE)
 
 
-def display_completed_level():
+def display_completed_level() -> None:
     ambient_music.stop()
     complete_level_fanfare.play()
-    for i in range(9):
+    duration =  3.3 # seconds
+    start_time = pygame.time.get_ticks() / 1000
+    now = start_time
+    while now - start_time < duration:
         screen.fill(BLUE)
-        display_message("Good Job!")
+        display_message("Good Job!", wait=False)
         pygame.display.flip()
         clock.tick(9)
         screen.fill(PURPLE)
-        display_message("Good Job!")
+        display_message("Good Job!", wait=False)
         pygame.display.flip()
         clock.tick(9)
+        now = pygame.time.get_ticks() / 1000
     ambient_music.play()
 
 

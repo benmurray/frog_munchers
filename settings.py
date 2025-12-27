@@ -25,9 +25,14 @@ GREEN2 = "#006118"
 ENEMY_SPAWN_RULES = {
     # difficulty: 1=green, 2=green+purple, 3=green+purple+red, 4=all (blue added)
     "default": {"max_enemies": 3, "cooldown": 3, "difficulty": 4},
-    1: {"max_enemies": 1, "cooldown": 1, "difficulty": 1},
-    2: {"max_enemies": 1, "cooldown": 4, "difficulty": 2},
-    3: {"max_enemies": 1, "cooldown": 3, "difficulty": 3},
-    4: {"max_enemies": 2, "cooldown": 3, "difficulty": 4},
-    5: {"max_enemies": 2, "cooldown": 2, "difficulty": 4},
+    # 1: {"max_enemies": 0, "cooldown": 1, "difficulty": 1},
+    2: {"max_enemies": 0, "cooldown": 4, "difficulty": 1},
+    3: {"max_enemies": 1, "cooldown": 3, "difficulty": 1},
+    4: {"max_enemies": 1, "cooldown": 3, "difficulty": 1},
+    5: {"max_enemies": 1, "cooldown": 2, "difficulty": 2},
+    6: {"max_enemies": 1, "cooldown": 1, "difficulty": 2},
+    7: {"max_enemies": 2, "cooldown": 4, "difficulty": 2},
+    8: {"max_enemies": 2, "cooldown": 3, "difficulty": 3},
+    9: {"max_enemies": 2, "cooldown": 3, "difficulty": 3},
+    10: {"max_enemies": 2, "cooldown": 2, "difficulty": 4},
 }

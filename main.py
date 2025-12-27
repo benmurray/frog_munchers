@@ -317,6 +317,9 @@ def display_completed_level() -> None:
         now = pygame.time.get_ticks() / 1000
     ambient_music.play()
 
+    # clear out any pending events if user pressed keys or mouse during the display
+    pygame.event.clear()
+
 
 def wait_for_any_key() -> None:
     time.sleep(1)
@@ -351,6 +354,8 @@ def run_game_loop(chosen_game: GameType, lives: int = 3, level: Optional[int] = 
 
     running = True
     while running:
+
+
         if game.beat_level():
             display_completed_level()
             hero.go_to_start_position()
@@ -403,9 +408,10 @@ def run_game_loop(chosen_game: GameType, lives: int = 3, level: Optional[int] = 
             if game.lives <= 0:
                 game.gameover = True
             display_message("You got caught!")
-            for e in collided:
-                if e in enemy_manager.enemies:
-                    enemy_manager.enemies.remove(e)
+
+            # remove all the enemies
+            for e in enemy_manager.enemies:
+                enemy_manager.enemies.remove(e)
             enemy_manager.last_spawn_time = time_in_level
 
         screen.blit(hero.surf, hero.rect)

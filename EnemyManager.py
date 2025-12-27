@@ -59,6 +59,7 @@ class EnemyManager:
                 new_enemy = Enemy(color=color, shape=self.grid_shape)
                 self._place_offstage_and_enter(new_enemy, time_in_level)
                 self.enemies.append(new_enemy)
+                self.last_spawn_time = pygame.time.get_ticks() / 1000.0
 
     def _update_enemies(self, time_in_level: float, hero: Optional["Hero"]) -> None:
         remaining = []
@@ -69,7 +70,8 @@ class EnemyManager:
                 hero_pos = None
                 if hero is not None:
                     hero_pos = (hero.y, hero.x)
-                moved = enemy.move_by_behavior(time_in_level, hero_pos)
+                positions = {(e.y, e.x) for e in self.enemies if e is not enemy and not e.has_left_grid}
+                moved = enemy.move_by_behavior(time_in_level, hero_pos, occupied_positions=positions)
                 if moved:
                     if not enemy.leaving:
                         enemy.schedule_next_move(time_in_level)
@@ -80,9 +82,10 @@ class EnemyManager:
         self.enemies = remaining
 
     def _time_to_spawn(self, time_in_level: float) -> bool:
-        in_cool_down = (time_in_level - self.last_spawn_time) > self.cool_down_time
+        in_cool_down = time_in_level < self.cool_down_time and self.last_spawn_time < self.cool_down_time
+        # in_cool_down = (time_in_level - self.last_spawn_time) > self.cool_down_time
 
-        if in_cool_down and len(self.enemies) < self.max_enemies_at_level:
+        if not in_cool_down and len(self.enemies) < self.max_enemies_at_level:
             self.last_spawn_time = time_in_level
             return True
         else:

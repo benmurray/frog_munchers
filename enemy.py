@@ -30,7 +30,7 @@ class Enemy(pygame.sprite.Sprite):
 
         self.rect = self.image.get_rect()
         self.rect.topleft = [0, 0]
-        self.hitbox = self.rect.inflate(-40, -40)
+        self.hitbox = self.rect.inflate(-60, -60)
 
         self.frame_num = 0
         self.frame_delta = Enemy.FRAME_DELTA
@@ -276,32 +276,47 @@ class Enemy(pygame.sprite.Sprite):
             return None
         return random.choice(options)
 
-    def move_by_behavior(self, now_sec: float, hero_pos: Optional[Tuple[int, int]]) -> Optional[bool]:
+    def move_by_behavior(
+        self, now_sec: float, hero_pos: Optional[Tuple[int, int]], occupied_positions: Optional[set[Tuple[int, int]]] = None
+    ) -> Optional[bool]:
         """Move according to color behavior."""
         handler = self._behavior_handlers.get(self.behavior, self._random_move)
-        return handler(now_sec, hero_pos)
+        return handler(now_sec, hero_pos, occupied_positions)
 
-    def _move_straight(self, now_sec: float, _: Optional[Tuple[int, int]]) -> Optional[bool]:
+    def _move_straight(
+        self, now_sec: float, _: Optional[Tuple[int, int]], occupied_positions: Optional[set[Tuple[int, int]]] = None
+    ) -> Optional[bool]:
         if not self.heading:
             return None
         dy, dx = self.heading
         dest_row = self.y + dy
         dest_col = self.x + dx
+        if occupied_positions and (dest_row, dest_col) in occupied_positions:
+            # wait and retry later
+            self.schedule_next_move(now_sec)
+            return None
         leaving = self._is_off_grid(dest_row, dest_col)
         return self._start_move(dest_row=dest_row, dest_col=dest_col, now_sec=now_sec, leaving=leaving)
 
-    def _move_in_out(self, now_sec: float, _: Optional[Tuple[int, int]]) -> Optional[bool]:
+    def _move_in_out(
+        self, now_sec: float, _: Optional[Tuple[int, int]], occupied_positions: Optional[set[Tuple[int, int]]] = None
+    ) -> Optional[bool]:
         if not self.entry_heading:
             return None
         dy, dx = self.entry_heading
         dest_row = self.y - dy
         dest_col = self.x - dx
+        if occupied_positions and (dest_row, dest_col) in occupied_positions:
+            self.schedule_next_move(now_sec)
+            return None
         leaving = self._is_off_grid(dest_row, dest_col)
         return self._start_move(dest_row=dest_row, dest_col=dest_col, now_sec=now_sec, leaving=leaving)
 
-    def _move_chase(self, now_sec: float, hero_pos: Optional[Tuple[int, int]]) -> Optional[bool]:
+    def _move_chase(
+        self, now_sec: float, hero_pos: Optional[Tuple[int, int]], occupied_positions: Optional[set[Tuple[int, int]]] = None
+    ) -> Optional[bool]:
         if hero_pos is None:
-            return self._random_move(now_sec, None)
+            return self._random_move(now_sec, None, occupied_positions)
         hero_row, hero_col = hero_pos
         diff_row = hero_row - self.y
         diff_col = hero_col - self.x
@@ -316,15 +331,23 @@ class Enemy(pygame.sprite.Sprite):
         target_col = self.x + dx
         if dy == 0 and dx == 0:
             return None
+        if occupied_positions and (target_row, target_col) in occupied_positions:
+            return None
         if self._is_off_grid(target_row, target_col):
-            return self._random_move(now_sec, None)
+            return self._random_move(now_sec, None, occupied_positions)
         return self._start_move(dest_row=target_row, dest_col=target_col, now_sec=now_sec, leaving=False)
 
-    def _random_move(self, now_sec: float, _: Optional[Tuple[int, int]] = None) -> Optional[bool]:
+    def _random_move(
+        self, now_sec: float, _: Optional[Tuple[int, int]] = None, occupied_positions: Optional[set[Tuple[int, int]]] = None
+    ) -> Optional[bool]:
         dest = self.pick_adjacent_or_leave()
         if dest is None:
             return None
         row, col, leaving = dest
+        if occupied_positions and (row, col) in occupied_positions:
+            # Try again later if blocked
+            self.schedule_next_move(now_sec)
+            return None
         return self._start_move(dest_row=row, dest_col=col, now_sec=now_sec, leaving=leaving)
 
     def _start_move(self, dest_row: int, dest_col: int, now_sec: float, leaving: bool = False) -> bool:

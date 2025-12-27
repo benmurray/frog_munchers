@@ -329,7 +329,7 @@ def run_game_loop(chosen_game, lives=3, level=None):
     draw_grid(screen, grid)
 
     hero = Hero(display=screen, shape=game.grid.shape, game=game)
-    enemy_manager = EnemyManager(screen=screen, level=level)
+    enemy_manager = EnemyManager(screen=screen, level=level, grid_shape=game.grid.shape)
     # enemies = pygame.sprite.Group()
 
     ambient_music.play(-1).set_volume(0.75)
@@ -383,6 +383,9 @@ def run_game_loop(chosen_game, lives=3, level=None):
         enemy_manager.update(time_in_level)
 
         screen.blit(hero.surf, hero.rect)
+        for enemy in enemy_manager.enemies:
+            if enemy.entered:
+                screen.blit(enemy.image, enemy.rect)
 
         draw_grid(screen, game.grid)
         draw_offstage(screen)

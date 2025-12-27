@@ -16,16 +16,18 @@ import pygame
 import settings
 import numpy as np
 from settings import Direction
+import random
 
 
 class Enemy(pygame.sprite.Sprite):
     FRAME_DELTA = 0.12
+    SPAWN_FADE_DURATION = 1.5  # seconds
 
     def __init__(self, color='purple', shape=(5, 6)):
         print("Enemy Spawned")
 
         super().__init__()
-        self.sprite_sheet = pygame.image.load(f'assets/images/{color}_ghost.png').convert()
+        self.sprite_sheet = pygame.image.load(f'assets/images/{color}_ghost.png').convert_alpha()
         self.image = pygame.Surface((125, 125))
         self.image.blit(self.sprite_sheet, dest=(0, 0), area=(0, 0, 125, 125))
 
@@ -44,23 +46,29 @@ class Enemy(pygame.sprite.Sprite):
 
         width = settings.BOARD_WIDTH
         height = settings.BOARD_HEIGHT
-        grid_x_start = (settings.SCREEN_WIDTH - width) / 2
-        col_width = int(width / self.grid.shape[1])
-        grid_y_start = (settings.SCREEN_HEIGHT - height) / 2
-        row_height = int(height / self.grid.shape[0])
+        self.grid_x_start = (settings.SCREEN_WIDTH - width) / 2
+        self.col_width = int(width / self.grid.shape[1])
+        self.grid_y_start = (settings.SCREEN_HEIGHT - height) / 2
+        self.row_height = int(height / self.grid.shape[0])
 
         self.moving = False  # movement across game board
-        self.col_width = col_width
-        self.row_height = row_height
 
-        self.rect.left = grid_x_start + (self.x * col_width) + (col_width - self.rect.w) // 2
-        self.rect.top = grid_y_start + (self.y * row_height) + (row_height - self.rect.h) // 2
+        self.rect.left = (
+            self.grid_x_start + (self.x * self.col_width) + (self.col_width - self.rect.w) // 2
+        )
+        self.rect.top = (
+            self.grid_y_start + (self.y * self.row_height) + (self.row_height - self.rect.h) // 2
+        )
 
         # start off screen
         self.curr_x, self.curr_y = -1000, -1000
         self.curr_x, self.curr_y = 0, 0
         self.dest_x, self.dest_y = self.curr_x, self.curr_y
         self.delta_x = self.delta_y = 0
+        self.spawn_time = 0  # when the enemy visually appears on grid
+        self.entry_time = 0  # scheduled time to enter the grid
+        self.entered = False
+        self.next_move_at = 0
 
     def create_loops(self):
         front1 = pygame.Surface((125, 125))
@@ -201,4 +209,50 @@ class Enemy(pygame.sprite.Sprite):
 
         self.rect.move_ip(move_x, move_y)
 
+    def set_grid_position(self, row: int, col: int):
+        """Place the enemy at a given grid cell (row, col)."""
+        self.x = col
+        self.y = row
+        self.rect.left = (
+            self.grid_x_start + (col * self.col_width) + (self.col_width - self.rect.w) // 2
+        )
+        self.rect.top = (
+            self.grid_y_start + (row * self.row_height) + (self.row_height - self.rect.h) // 2
+        )
+        self.curr_x, self.curr_y = self.rect.left, self.rect.top
+        self.dest_x, self.dest_y = self.curr_x, self.curr_y
 
+    def apply_fade(self, current_time_sec: float):
+        """Fade in based on time since spawn."""
+        if not self.entered:
+            return
+        elapsed = max(0.0, current_time_sec - self.spawn_time)
+        progress = min(1.0, elapsed / Enemy.SPAWN_FADE_DURATION)
+        alpha = int(255 * progress)
+        self.image.set_alpha(alpha)
+
+    def schedule_next_move(self, now_sec: float):
+        """Pick a random interval between 2-5 seconds for the next move."""
+        self.next_move_at = now_sec + random.uniform(2, 5)
+
+    def pick_adjacent_or_leave(self):
+        """Choose a random orthogonally adjacent cell (no diagonals, no leaving)."""
+        rows, cols = self.grid.shape
+        options = []
+        deltas = [(-1, 0), (1, 0), (0, -1), (0, 1)]
+        for dy, dx in deltas:
+            nr, nc = self.y + dy, self.x + dx
+            if 0 <= nr < rows and 0 <= nc < cols:
+                options.append((nr, nc))
+        if not options:
+            return None
+        return random.choice(options)
+
+    def move_adjacent_or_leave(self):
+        """Move to an orthogonally adjacent cell within the grid."""
+        dest = self.pick_adjacent_or_leave()
+        if dest is None:
+            return False
+        row, col = dest
+        self.set_grid_position(row=row, col=col)
+        return True

@@ -1,12 +1,16 @@
 import settings
+import random
 from enemy import Enemy
 
 
 class EnemyManager:
 
-    def __init__(self, screen, level: int = 1):
+    def __init__(self, screen, level: int = 1, grid_shape=(5, 6)):
         assert(screen is not None)
         self.screen = screen
+        self.spawn_rules = settings.ENEMY_SPAWN_RULES
+        self.grid_shape = grid_shape
+        self.entry_delay_range = (0, 0)
         self.max_enemies_at_level = 0
         self.start_time = 0
         self.current_level = 1
@@ -32,7 +36,7 @@ class EnemyManager:
     # Called once per frame
     def update(self, time_in_level: int = 0):
         self._check_if_spawn(time_in_level)
-        self._update_enemies()
+        self._update_enemies(time_in_level)
 
     def clear_enemies(self):
         self.enemies = []
@@ -45,19 +49,29 @@ class EnemyManager:
         """
         if self.current_level > 0:
             if self._time_to_spawn(time_in_level):
-                new_enemy = Enemy()
+                new_enemy = Enemy(shape=self.grid_shape)
+                new_enemy.entry_time = time_in_level
+                new_enemy.spawn_time = time_in_level
+                new_enemy.entered = True
+                new_enemy.image.set_alpha(0)
+                self._place_on_random_perimeter_cell(new_enemy)
+                new_enemy.schedule_next_move(time_in_level)
                 self.enemies.append(new_enemy)
-                # spawn enemy
-                start_x = (settings.SCREEN_WIDTH - settings.BOARD_WIDTH) / 2
-                start_y = (settings.SCREEN_HEIGHT - settings.BOARD_HEIGHT) / 2
 
-                # have it spawn to left of first grid cell TODO: Make this dynamic
-                start_x -= 125
-                new_enemy.rect.move_ip(start_x, start_y)
-
-    def _update_enemies(self):
+    def _update_enemies(self, time_in_level):
+        remaining = []
         for enemy in self.enemies:
             enemy.update()
+            enemy.apply_fade(time_in_level)
+            if time_in_level >= enemy.next_move_at:
+                moved = enemy.move_adjacent_or_leave()
+                if not moved:
+                    # Enemy walked off the grid
+                    continue
+                enemy.schedule_next_move(time_in_level)
+
+            remaining.append(enemy)
+        self.enemies = remaining
 
     def _time_to_spawn(self, time_in_level) -> bool:
         in_cool_down = (time_in_level - self.last_spawn_time) > self.cool_down_time
@@ -70,5 +84,35 @@ class EnemyManager:
 
     def reset_level(self) -> None:
         """Reset level enemies, level_start_time"""
-        self.max_enemies_at_level = self.current_level // 3
+        rule = self._get_spawn_rule(self.current_level)
+        self.max_enemies_at_level = rule["max_enemies"]
+        self.cool_down_time = rule["cooldown"]
+        self.last_spawn_time = -(self.cool_down_time + 1)  # allow immediate spawn if desired
         self.enemies = []
+
+    def _get_spawn_rule(self, level: int) -> dict:
+        # Look up per-level rule; fall back to default or computed rule
+        rule = self.spawn_rules.get(level)
+        if rule is None:
+            rule = self.spawn_rules.get("default")
+        if rule is None:
+            # fallback to prior behavior
+            return {"max_enemies": level // 3, "cooldown": 3}
+        return rule
+
+    def _place_on_random_perimeter_cell(self, enemy: Enemy):
+        rows, cols = self.grid_shape
+        perimeter_cells = []
+        # top and bottom rows
+        for c in range(cols):
+            perimeter_cells.append((0, c))
+            perimeter_cells.append((rows - 1, c))
+        # left and right columns (excluding corners already added)
+        for r in range(1, rows - 1):
+            perimeter_cells.append((r, 0))
+            perimeter_cells.append((r, cols - 1))
+
+        if not perimeter_cells:
+            return
+        row, col = random.choice(perimeter_cells)
+        enemy.set_grid_position(row=row, col=col)

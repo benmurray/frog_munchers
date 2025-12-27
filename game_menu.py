@@ -4,6 +4,7 @@ import pygame_menu
 import settings
 from defined_games import GameType
 
+
 GAME_TYPES = [('Evens', GameType.Evens), ('Odds', GameType.Odds), ('All Multiples', GameType.Multiples)]
 display_menu = True
 game_selected = GameType.Evens

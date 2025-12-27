@@ -106,6 +106,11 @@ def draw_offstage(screen: pygame.Surface) -> None:
     left = pygame.Surface((grid_x_start, screen_height))
     right = pygame.Surface((grid_x_start, screen_height))
 
+    top.fill(BLACK)
+    bottom.fill(BLACK)
+    left.fill(BLACK)
+    right.fill(BLACK)
+
     screen.blit(top, dest=(0, 0))
     screen.blit(bottom, dest=(0, screen_height - grid_y_start))
     screen.blit(left, dest=(0, 0))
@@ -381,6 +386,19 @@ def run_game_loop(chosen_game, lives=3, level=None):
 
         hero.update()
         enemy_manager.update(time_in_level)
+
+        # Hero vs Enemy collision
+        collided = [e for e in enemy_manager.enemies if hero.rect.colliderect(e.hitbox)]
+        if collided:
+            wrong_snd.play()
+            game.lives -= 1
+            if game.lives <= 0:
+                game.gameover = True
+            display_message("You got caught!")
+            for e in collided:
+                if e in enemy_manager.enemies:
+                    enemy_manager.enemies.remove(e)
+            enemy_manager.last_spawn_time = time_in_level
 
         screen.blit(hero.surf, hero.rect)
         for enemy in enemy_manager.enemies:

@@ -63,10 +63,13 @@ class EnemyManager:
         for enemy in self.enemies:
             enemy.update(time_in_level)
             enemy.apply_fade(time_in_level)
-            if time_in_level >= enemy.next_move_at and not enemy.moving:
+            if time_in_level >= enemy.next_move_at and not enemy.moving and not enemy.has_left_grid:
                 moved = enemy.move_adjacent_or_leave(time_in_level)
                 if moved:
-                    enemy.schedule_next_move(time_in_level)
+                    if not enemy.leaving:
+                        enemy.schedule_next_move(time_in_level)
+            if enemy.has_left_grid:
+                continue
 
             remaining.append(enemy)
         self.enemies = remaining

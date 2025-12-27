@@ -25,8 +25,6 @@ class Enemy(pygame.sprite.Sprite):
     MOVE_DURATION = 0.5  # seconds to move between cells
 
     def __init__(self, color='purple', shape=(5, 6)):
-        print("Enemy Spawned")
-
         super().__init__()
         self.sprite_sheet = pygame.image.load(f'assets/images/{color}_ghost.png').convert_alpha()
         self.image = pygame.Surface((125, 125))
@@ -37,6 +35,7 @@ class Enemy(pygame.sprite.Sprite):
 
         self.rect = self.image.get_rect()
         self.rect.topleft = [0, 0]
+        self.hitbox = self.rect.inflate(-40, -40)
 
         self.frame_num = 0
         self.frame_delta = Enemy.FRAME_DELTA
@@ -60,6 +59,7 @@ class Enemy(pygame.sprite.Sprite):
         self.rect.top = (
             self.grid_y_start + (self.y * self.row_height) + (self.row_height - self.rect.h) // 2
         )
+        self._sync_hitbox()
 
         # start off screen
         self.curr_x, self.curr_y = -1000, -1000
@@ -71,6 +71,8 @@ class Enemy(pygame.sprite.Sprite):
         self.entered = False
         self.next_move_at = 0
         self.moving = False
+        self.leaving = False
+        self.has_left_grid = False
         self.move_start_time = 0.0
         self.move_start_pos = (0.0, 0.0)
         self.move_dest_pos = (0.0, 0.0)
@@ -228,6 +230,7 @@ class Enemy(pygame.sprite.Sprite):
         )
         self.curr_x, self.curr_y = self.rect.left, self.rect.top
         self.dest_x, self.dest_y = self.curr_x, self.curr_y
+        self._sync_hitbox()
 
     def apply_fade(self, current_time_sec: float):
         """Fade in based on time since spawn."""
@@ -243,14 +246,25 @@ class Enemy(pygame.sprite.Sprite):
         self.next_move_at = now_sec + random.uniform(2, 5)
 
     def pick_adjacent_or_leave(self):
-        """Choose a random orthogonally adjacent cell (no diagonals, no leaving)."""
+        """Choose a random orthogonally adjacent cell; allow leaving when on perimeter."""
         rows, cols = self.grid.shape
         options = []
         deltas = [(-1, 0), (1, 0), (0, -1), (0, 1)]
         for dy, dx in deltas:
             nr, nc = self.y + dy, self.x + dx
             if 0 <= nr < rows and 0 <= nc < cols:
-                options.append((nr, nc))
+                options.append((nr, nc, False))
+        leave_targets = []
+        if self.x == 0:
+            leave_targets.append((self.y, -1))
+        if self.x == cols - 1:
+            leave_targets.append((self.y, cols))
+        if self.y == 0:
+            leave_targets.append((-1, self.x))
+        if self.y == rows - 1:
+            leave_targets.append((rows, self.x))
+        for lr, lc in leave_targets:
+            options.append((lr, lc, True))
         if not options:
             return None
         return random.choice(options)
@@ -259,12 +273,15 @@ class Enemy(pygame.sprite.Sprite):
         """Move to an orthogonally adjacent cell within the grid."""
         dest = self.pick_adjacent_or_leave()
         if dest is None:
-            return False
-        return self._start_move(dest_row=dest[0], dest_col=dest[1], now_sec=now_sec)
+            return None
+        row, col, leaving = dest
+        return self._start_move(dest_row=row, dest_col=col, now_sec=now_sec, leaving=leaving)
 
-    def _start_move(self, dest_row: int, dest_col: int, now_sec: float) -> bool:
+    def _start_move(self, dest_row: int, dest_col: int, now_sec: float, leaving: bool = False) -> bool:
         """Begin animating a move to a destination cell."""
         self.moving = True
+        self.leaving = leaving
+        self.has_left_grid = False
         self.move_start_time = now_sec
         self.move_start_pos = (float(self.rect.left), float(self.rect.top))
         self.move_dest_cell = (dest_row, dest_col)
@@ -287,11 +304,21 @@ class Enemy(pygame.sprite.Sprite):
         new_y = start_y + (dest_y - start_y) * progress
         self.rect.left = int(new_x)
         self.rect.top = int(new_y)
+        self._sync_hitbox()
         if progress >= 1.0:
             # Snap to cell and finish
             row, col = self.move_dest_cell
-            self.set_grid_position(row=row, col=col)
+            rows, cols = self.grid.shape
+            if self.leaving and (row < 0 or row >= rows or col < 0 or col >= cols):
+                # Completed leaving the grid
+                self.rect.left = int(dest_x)
+                self.rect.top = int(dest_y)
+                self._sync_hitbox()
+                self.has_left_grid = True
+            else:
+                self.set_grid_position(row=row, col=col)
             self.moving = False
+            self.leaving = False
             self.current_sprite_loop = self.idle
 
     def _set_direction_loop(self, dest_row: int, dest_col: int):
@@ -306,3 +333,7 @@ class Enemy(pygame.sprite.Sprite):
             self.current_sprite_loop = self.down
         else:
             self.current_sprite_loop = self.idle
+
+    def _sync_hitbox(self):
+        """Keep hitbox aligned and slightly smaller than the sprite rect."""
+        self.hitbox = self.rect.inflate(-40, -40)

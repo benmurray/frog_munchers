@@ -15,6 +15,7 @@ BOARD_WIDTH = 900
 BOARD_HEIGHT = 500
 
 FRAME_RATE = 60
+HIGH_SCORE_FILE = "assets/high_scores.pkl"
 
 # Farrar Frog Green
 GREEN = "#12581a"

@@ -7,6 +7,7 @@ import pygame
 
 from EnemyManager import EnemyManager
 from defined_games import get_game, GameType
+from high_scores import show_high_scores
 from hero import Hero
 from game_menu import show_menu_screen
 from colors import BLACK, WHITE, PURPLE, BLUE, ORANGE
@@ -203,11 +204,11 @@ def show_score(scrn: pygame.Surface, score: int) -> None:
     scrn.blit(score_box, (score_txt_x + _surf.get_width(), score_txt_y))
 
 
-def show_game_win(scrn: pygame.Surface, score: int) -> None:
-    show_game_over(scrn, won=True, score=score)
+def show_game_win(scrn: pygame.Surface, score: int, wait: bool = True) -> None:
+    show_game_over(scrn, won=True, score=score, wait=wait)
 
 
-def show_game_over(scrn: pygame.Surface, won: bool = False, score: int = 0) -> None:
+def show_game_over(scrn: pygame.Surface, won: bool = False, score: int = 0, wait: bool = True) -> None:
     ambient_music.stop()
     scrn.fill((0, 0, 0))
 
@@ -253,7 +254,8 @@ def show_game_over(scrn: pygame.Surface, won: bool = False, score: int = 0) -> N
     scrn.blit(instructions_text, instructions_rect)
     pygame.display.flip()
     pygame.display.update()
-    wait_for_any_key()
+    if wait:
+        wait_for_any_key()
     gameover_music.stop()
     win_snd.stop()
 
@@ -435,10 +437,11 @@ def run_game_loop(chosen_game: GameType, lives: int = 3, level: Optional[int] = 
             running = False
             ambient_music.stop()
             if game.beat_level():
-                show_game_win(screen, game.score)
+                show_game_win(screen, game.score, wait=False)
             else:
                 display_message(f"You made to level {game.level} with a score of {game.score} !", wait=True)
-                show_game_over(screen)
+                show_game_over(screen, score=game.score, wait=False)
+            show_high_scores(screen, game.score)
         elif not running:
             pygame.display.quit()
             sys.exit()

@@ -335,7 +335,7 @@ def run_game_loop(chosen_game, lives=3, level=None):
     ambient_music.play(-1).set_volume(0.75)
     eat_snd.set_volume(0.3)
     # used for timing Enemies
-    time_at_level_start = pygame.time.get_ticks() // 1000
+    time_at_level_start = pygame.time.get_ticks() / 1000
 
     running = True
     while running:
@@ -343,10 +343,10 @@ def run_game_loop(chosen_game, lives=3, level=None):
             display_completed_level()
             game.start_next_level()
             # update the time of level start
-            time_at_level_start = pygame.time.get_ticks()
+            time_at_level_start = pygame.time.get_ticks() / 1000
             enemy_manager.level = game.level
 
-        time_in_level = pygame.time.get_ticks() // 1000 - time_at_level_start
+        time_in_level = pygame.time.get_ticks() / 1000 - time_at_level_start
 
         screen.fill(BLACK)
         # pressed_keys

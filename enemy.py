@@ -22,6 +22,7 @@ import random
 class Enemy(pygame.sprite.Sprite):
     FRAME_DELTA = 0.12
     SPAWN_FADE_DURATION = 1.5  # seconds
+    MOVE_DURATION = 0.5  # seconds to move between cells
 
     def __init__(self, color='purple', shape=(5, 6)):
         print("Enemy Spawned")
@@ -69,6 +70,11 @@ class Enemy(pygame.sprite.Sprite):
         self.entry_time = 0  # scheduled time to enter the grid
         self.entered = False
         self.next_move_at = 0
+        self.moving = False
+        self.move_start_time = 0.0
+        self.move_start_pos = (0.0, 0.0)
+        self.move_dest_pos = (0.0, 0.0)
+        self.move_dest_cell = (self.y, self.x)
 
     def create_loops(self):
         front1 = pygame.Surface((125, 125))
@@ -109,13 +115,14 @@ class Enemy(pygame.sprite.Sprite):
 
         return front_loop, left_loop, right_loop, up_loop, front_loop
 
-    def update(self):
-        '''Called each iteration of game loop. Loops through sprites of 'self.current_sprite_loop'. '''
+    def update(self, current_time_sec: float):
+        """Called each iteration of game loop."""
         self.frame_num += self.frame_delta
         if self.frame_num >= len(self.current_sprite_loop):
             self.frame_num = 0
 
         self.image = pygame.transform.scale(self.current_sprite_loop[int(self.frame_num)], (125, 125))
+        self._update_move(current_time_sec)
 
     def update_position(self, direction):
         if self.moving:
@@ -248,11 +255,54 @@ class Enemy(pygame.sprite.Sprite):
             return None
         return random.choice(options)
 
-    def move_adjacent_or_leave(self):
+    def move_adjacent_or_leave(self, now_sec: float):
         """Move to an orthogonally adjacent cell within the grid."""
         dest = self.pick_adjacent_or_leave()
         if dest is None:
             return False
-        row, col = dest
-        self.set_grid_position(row=row, col=col)
+        return self._start_move(dest_row=dest[0], dest_col=dest[1], now_sec=now_sec)
+
+    def _start_move(self, dest_row: int, dest_col: int, now_sec: float) -> bool:
+        """Begin animating a move to a destination cell."""
+        self.moving = True
+        self.move_start_time = now_sec
+        self.move_start_pos = (float(self.rect.left), float(self.rect.top))
+        self.move_dest_cell = (dest_row, dest_col)
+        self.move_dest_pos = (
+            self.grid_x_start + (dest_col * self.col_width) + (self.col_width - self.rect.w) // 2,
+            self.grid_y_start + (dest_row * self.row_height) + (self.row_height - self.rect.h) // 2,
+        )
+        self._set_direction_loop(dest_row, dest_col)
         return True
+
+    def _update_move(self, current_time_sec: float):
+        """Interpolate movement if currently moving."""
+        if not self.moving:
+            return
+        elapsed = current_time_sec - self.move_start_time
+        progress = max(0.0, min(1.0, elapsed / Enemy.MOVE_DURATION))
+        start_x, start_y = self.move_start_pos
+        dest_x, dest_y = self.move_dest_pos
+        new_x = start_x + (dest_x - start_x) * progress
+        new_y = start_y + (dest_y - start_y) * progress
+        self.rect.left = int(new_x)
+        self.rect.top = int(new_y)
+        if progress >= 1.0:
+            # Snap to cell and finish
+            row, col = self.move_dest_cell
+            self.set_grid_position(row=row, col=col)
+            self.moving = False
+            self.current_sprite_loop = self.idle
+
+    def _set_direction_loop(self, dest_row: int, dest_col: int):
+        """Switch sprite loop based on intended move direction."""
+        if dest_col < self.x:
+            self.current_sprite_loop = self.left
+        elif dest_col > self.x:
+            self.current_sprite_loop = self.right
+        elif dest_row < self.y:
+            self.current_sprite_loop = self.up
+        elif dest_row > self.y:
+            self.current_sprite_loop = self.down
+        else:
+            self.current_sprite_loop = self.idle

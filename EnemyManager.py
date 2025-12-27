@@ -61,14 +61,12 @@ class EnemyManager:
     def _update_enemies(self, time_in_level):
         remaining = []
         for enemy in self.enemies:
-            enemy.update()
+            enemy.update(time_in_level)
             enemy.apply_fade(time_in_level)
-            if time_in_level >= enemy.next_move_at:
-                moved = enemy.move_adjacent_or_leave()
-                if not moved:
-                    # Enemy walked off the grid
-                    continue
-                enemy.schedule_next_move(time_in_level)
+            if time_in_level >= enemy.next_move_at and not enemy.moving:
+                moved = enemy.move_adjacent_or_leave(time_in_level)
+                if moved:
+                    enemy.schedule_next_move(time_in_level)
 
             remaining.append(enemy)
         self.enemies = remaining

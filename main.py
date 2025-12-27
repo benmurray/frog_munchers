@@ -1,6 +1,5 @@
 import argparse
 import sys
-import os
 import pygame
 import time
 
@@ -310,6 +309,7 @@ def wait_for_any_key():
 def run_game_loop(chosen_game, lives=3, level=None):
     game = get_game(chosen_game)
     if level is None:
+        level = 1
         game.start_over(lives)
     else:
         game.start_over(lives, level)

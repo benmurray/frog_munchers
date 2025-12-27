@@ -11,6 +11,7 @@ class EnemyManager:
         self.screen = screen
         self.max_enemies_at_level = 0
         self.start_time = 0
+        self.current_level = 1
         self.current_level_start_time = 0
         self.last_spawn_time = 0
         self.cool_down_time = 3
@@ -26,7 +27,7 @@ class EnemyManager:
         return self.current_level
 
     @level.setter
-    def level(self, level: int) -> None:
+    def level(self, level: int = 1) -> None:
         self.current_level = level
         self.reset_level()
 

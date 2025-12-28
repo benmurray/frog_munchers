@@ -6,7 +6,7 @@ from enum import Enum
 # Resolve base path for assets (handles PyInstaller _MEIPASS) and a writable state dir
 BASE_DIR = Path(getattr(sys, "_MEIPASS", Path(__file__).resolve().parent))
 ASSETS_DIR = BASE_DIR / "assets"
-STATE_DIR = Path(os.environ.get("MURRAY_MUNCHERS_STATE_DIR", Path.home() / ".murray_munchers"))
+STATE_DIR = Path(os.environ.get("FROG_MUNCHERS_STATE_DIR", Path.home() / ".frog_munchers"))
 
 
 def asset_path(*parts: str) -> Path:

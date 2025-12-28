@@ -1,4 +1,16 @@
+import os
+import sys
+from pathlib import Path
 from enum import Enum
+
+# Resolve base path for assets (handles PyInstaller _MEIPASS) and a writable state dir
+BASE_DIR = Path(getattr(sys, "_MEIPASS", Path(__file__).resolve().parent))
+ASSETS_DIR = BASE_DIR / "assets"
+STATE_DIR = Path(os.environ.get("MURRAY_MUNCHERS_STATE_DIR", Path.home() / ".murray_munchers"))
+
+
+def asset_path(*parts: str) -> Path:
+    return ASSETS_DIR.joinpath(*parts)
 
 
 class Direction(Enum):
@@ -15,7 +27,8 @@ BOARD_WIDTH = 900
 BOARD_HEIGHT = 500
 
 FRAME_RATE = 60
-HIGH_SCORE_FILE = "assets/high_scores.pkl"
+# Where high scores are stored (writable, outside packaged assets)
+HIGH_SCORE_FILE = STATE_DIR / "high_scores.pkl"
 
 # Farrar Frog Green
 GREEN = "#12581a"

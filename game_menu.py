@@ -3,6 +3,7 @@ import pygame
 import pygame_menu
 import settings
 from defined_games import GameType
+from settings import asset_path
 
 
 GAME_TYPES = [('Evens', GameType.Evens), ('Odds', GameType.Odds), ('All Multiples', GameType.Multiples)]
@@ -22,7 +23,7 @@ def start_game(menu):
 
 
 bg_image = pygame_menu.BaseImage(
-    image_path="assets/images/farrar.jpg"
+    image_path=str(asset_path("images", "farrar.jpg"))
 )
 
 
@@ -34,7 +35,7 @@ def show_menu_screen(screen):
     global display_menu, game_selected
     display_menu = True
 
-    menu_music = pygame.mixer.Sound("assets/sounds/menu.ogg")
+    menu_music = pygame.mixer.Sound(str(asset_path("sounds", "menu.ogg")))
     menu_music.play(-1)
     screen = screen
 

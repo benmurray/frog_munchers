@@ -4,6 +4,7 @@ import time
 from typing import Any, Optional
 
 import pygame
+from settings import asset_path
 
 from EnemyManager import EnemyManager
 from defined_games import get_game, GameType
@@ -22,15 +23,15 @@ pygame.init()
 
 grid_x_start = col_width = grid_y_start = row_height = 0
 
-eat_snd = pygame.mixer.Sound("assets/sounds/eat.ogg")
-wrong_snd = pygame.mixer.Sound("assets/sounds/wrong_answer.wav")
-caught_snd = pygame.mixer.Sound("assets/sounds/monster-attack.wav")
-ambient_music = pygame.mixer.Sound("assets/sounds/ambient.ogg")
-complete_level_fanfare = pygame.mixer.Sound("assets/sounds/tadah.ogg")
-gameover_music = pygame.mixer.Sound("assets/sounds/gameover.ogg")
-game_over_snd = pygame.mixer.Sound("assets/sounds/game_over.wav")
-win_snd = pygame.mixer.Sound("assets/sounds/fanfare.wav")
-outro_snd = pygame.mixer.Sound("assets/sounds/outro.wav")
+eat_snd = pygame.mixer.Sound(str(asset_path("sounds", "eat.ogg")))
+wrong_snd = pygame.mixer.Sound(str(asset_path("sounds", "wrong_answer.wav")))
+caught_snd = pygame.mixer.Sound(str(asset_path("sounds", "monster-attack.wav")))
+ambient_music = pygame.mixer.Sound(str(asset_path("sounds", "ambient.ogg")))
+complete_level_fanfare = pygame.mixer.Sound(str(asset_path("sounds", "tadah.ogg")))
+gameover_music = pygame.mixer.Sound(str(asset_path("sounds", "gameover.ogg")))
+game_over_snd = pygame.mixer.Sound(str(asset_path("sounds", "game_over.wav")))
+win_snd = pygame.mixer.Sound(str(asset_path("sounds", "fanfare.wav")))
+outro_snd = pygame.mixer.Sound(str(asset_path("sounds", "outro.wav")))
 
 display_info = pygame.display.Info()
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
@@ -161,7 +162,7 @@ def show_title(scrn: pygame.Surface, title_txt: str) -> None:
 
 def show_lives(screen: pygame.Surface, num_lives: int = 3) -> None:
     """Lives: @@@"""
-    hero_image = pygame.image.load("assets/images/life_indicator.png").convert()
+    hero_image = pygame.image.load(str(asset_path("images", "life_indicator.png"))).convert()
     width = hero_image.get_width()
     width += 5  # add space between each individual image
     lives_surface = pygame.Surface((width * 3, 50))
@@ -214,8 +215,8 @@ def show_game_over(scrn: pygame.Surface, won: bool = False, score: int = 0, wait
     ambient_music.stop()
     scrn.fill((0, 0, 0))
 
-    text_font_32 = pygame.font.Font("assets/fonts/auto_digital.ttf", 32)
-    text_font_64 = pygame.font.Font("assets/fonts/auto_digital.ttf", 64)
+    text_font_32 = pygame.font.Font(str(asset_path("fonts", "auto_digital.ttf")), 32)
+    text_font_64 = pygame.font.Font(str(asset_path("fonts", "auto_digital.ttf")), 64)
     if won:
         title_text = text_font_64.render("You Win", True, (255, 0, 0))
     else:

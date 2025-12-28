@@ -4,7 +4,7 @@ from typing import Callable, Dict, List, Optional, Tuple
 import pygame
 import settings
 import numpy as np
-from settings import Direction
+from settings import Direction, asset_path
 
 
 class Enemy(pygame.sprite.Sprite):
@@ -21,7 +21,7 @@ class Enemy(pygame.sprite.Sprite):
             "red": "random",
             "blue": "chase",
         }.get(color, "random")
-        self.sprite_sheet = pygame.image.load(f'assets/images/{color}_ghost.png').convert_alpha()
+        self.sprite_sheet = pygame.image.load(str(asset_path("images", f"{color}_ghost.png"))).convert_alpha()
         self.image = pygame.Surface((125, 125))
         self.image.blit(self.sprite_sheet, dest=(0, 0), area=(0, 0, 125, 125))
 

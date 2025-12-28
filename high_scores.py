@@ -1,20 +1,19 @@
-import os
 import pickle
 from typing import List, Tuple, Optional
 
 import pygame
 
 from colors import BLACK, WHITE, PURPLE, BLUE, ORANGE
-from settings import SCREEN_WIDTH, SCREEN_HEIGHT, FRAME_RATE, HIGH_SCORE_FILE
+from settings import SCREEN_WIDTH, SCREEN_HEIGHT, FRAME_RATE, HIGH_SCORE_FILE, STATE_DIR
 
 ScoreEntry = Tuple[str, int]
 
 
 def load_scores() -> List[ScoreEntry]:
-    if not os.path.exists(HIGH_SCORE_FILE):
+    if not HIGH_SCORE_FILE.exists():
         return []
     try:
-        with open(HIGH_SCORE_FILE, "rb") as f:
+        with HIGH_SCORE_FILE.open("rb") as f:
             data = pickle.load(f)
         if isinstance(data, list):
             return [(str(n), int(s)) for n, s in data][:10]
@@ -24,8 +23,8 @@ def load_scores() -> List[ScoreEntry]:
 
 
 def save_scores(scores: List[ScoreEntry]) -> None:
-    os.makedirs(os.path.dirname(HIGH_SCORE_FILE), exist_ok=True)
-    with open(HIGH_SCORE_FILE, "wb") as f:
+    STATE_DIR.mkdir(parents=True, exist_ok=True)
+    with HIGH_SCORE_FILE.open("wb") as f:
         pickle.dump(scores, f)
 
 

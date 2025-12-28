@@ -3,6 +3,7 @@ import numpy as np
 from typing import Any, Sequence, Tuple
 
 import settings
+from settings import asset_path
 
 SCREEN_WIDTH = settings.SCREEN_WIDTH
 SCREEN_HEIGHT = settings.SCREEN_HEIGHT
@@ -48,7 +49,7 @@ class Hero(pygame.sprite.Sprite):
         self.delta_x = self.delta_y = 0
 
     def build_images(self) -> None:
-        hero_sprites = pygame.image.load('assets/images/hero_sprite.png').convert()
+        hero_sprites = pygame.image.load(str(asset_path("images", "hero_sprite.png"))).convert()
         self.standing_hero = pygame.Surface((115, 100))
         # width of 115 and a height of 100
         self.standing_hero.blit(hero_sprites, dest=(0, 0), area=(0, 0, 115, 100))
@@ -73,31 +74,6 @@ class Hero(pygame.sprite.Sprite):
 
     def move_one(self) -> None:
         self.surf = pygame.transform.scale(self.moving_right1, (85, 80))
-
-
-    def build_images(self) -> None:
-        hero_sprites = pygame.image.load('assets/images/hero_sprite.png').convert()
-        self.standing_hero = pygame.Surface((115, 100))
-        # width of 115 and a height of 100
-        self.standing_hero.blit(hero_sprites, dest=(0, 0), area=(0, 0, 115, 100))
-
-        self.moving_right1 = pygame.Surface((115, 100))
-        self.moving_right1.blit(hero_sprites, dest=(0, 0), area=(0, 101, 115, 100))
-
-        self.moving_right2 = pygame.Surface((115, 100))
-        self.moving_right2.blit(hero_sprites, dest=(0, 0), area=(0, 201, 115, 100))
-
-        self.mouth_open = pygame.Surface((115, 100))
-        self.mouth_open.blit(hero_sprites, dest=(0, 0), area=(0, 301, 115, 100))
-
-        self.scared = pygame.Surface((115, 100))
-        self.scared.blit(hero_sprites, dest=(0, 0), area=(0, 401, 115, 100))
-
-    def close_mouth(self) -> None:
-        self.surf = pygame.transform.scale(self.standing_hero, (85, 80))
-
-    def open_mouth(self) -> None:
-        self.surf = pygame.transform.scale(self.mouth_open, (85, 80))
 
     def move_one(self) -> None:
         self.surf = pygame.transform.scale(self.moving_right1, (85, 80))

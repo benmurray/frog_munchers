@@ -38,8 +38,8 @@ GREEN2 = "#006118"
 # If a level is missing, default rules are used.
 ENEMY_SPAWN_RULES = {
     # difficulty: 1=green, 2=green+purple, 3=green+purple+red, 4=all (blue added)
-    "default": {"max_enemies": 3, "cooldown": 3, "difficulty": 4},
-    # 1: {"max_enemies": 0, "cooldown": 1, "difficulty": 1},
+    "default": {"max_enemies": 3, "cooldown": 5, "difficulty": 4},
+    1: {"max_enemies": 0, "cooldown": 1, "difficulty": 1},
     2: {"max_enemies": 0, "cooldown": 4, "difficulty": 1},
     3: {"max_enemies": 1, "cooldown": 3, "difficulty": 1},
     4: {"max_enemies": 1, "cooldown": 3, "difficulty": 1},

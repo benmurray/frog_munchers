@@ -414,8 +414,7 @@ def run_game_loop(chosen_game: GameType, lives: int = 3, level: Optional[int] = 
             display_message("You got caught!")
 
             # remove all the enemies
-            for e in enemy_manager.enemies:
-                enemy_manager.enemies.remove(e)
+            enemy_manager.enemies.clear()
             enemy_manager.last_spawn_time = time_in_level
 
         screen.blit(hero.surf, hero.rect)

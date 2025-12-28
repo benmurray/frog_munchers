@@ -22,7 +22,7 @@ class EnemyManager:
         self.current_level = 1
         self.current_level_start_time = 0
         self.last_spawn_time = 0
-        self.cool_down_time = 3
+        self.cool_down_time = 3.0
 
         self.enemies: List[Enemy] = []
         if level is None:
@@ -59,7 +59,7 @@ class EnemyManager:
                 new_enemy = Enemy(color=color, shape=self.grid_shape)
                 self._place_offstage_and_enter(new_enemy, time_in_level)
                 self.enemies.append(new_enemy)
-                self.last_spawn_time = pygame.time.get_ticks() / 1000.0
+                self.last_spawn_time = time_in_level
 
     def _update_enemies(self, time_in_level: float, hero: Optional["Hero"]) -> None:
         remaining = []
@@ -82,21 +82,16 @@ class EnemyManager:
         self.enemies = remaining
 
     def _time_to_spawn(self, time_in_level: float) -> bool:
-        in_cool_down = time_in_level < self.cool_down_time and self.last_spawn_time < self.cool_down_time
-        # in_cool_down = (time_in_level - self.last_spawn_time) > self.cool_down_time
-
-        if not in_cool_down and len(self.enemies) < self.max_enemies_at_level:
-            self.last_spawn_time = time_in_level
-            return True
-        else:
+        if len(self.enemies) >= self.max_enemies_at_level or self.max_enemies_at_level == 0:
             return False
+        return (time_in_level - self.last_spawn_time) >= self.cool_down_time
 
     def reset_level(self) -> None:
         """Reset level enemies, level_start_time"""
         rule = self._get_spawn_rule(self.current_level)
         self.max_enemies_at_level = rule["max_enemies"]
-        self.cool_down_time = rule["cooldown"]
-        self.last_spawn_time = -(self.cool_down_time + 1)  # allow immediate spawn if desired
+        self.cool_down_time = float(rule["cooldown"])
+        self.last_spawn_time = 0.0  # wait a full cooldown before the first spawn
         self.enemies = []
 
     def _get_spawn_rule(self, level: int) -> dict[str, int]:

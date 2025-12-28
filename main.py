@@ -446,6 +446,7 @@ def run_game_loop(chosen_game: GameType, lives: int = 3, level: Optional[int] = 
                 show_game_over(screen, score=game.score, wait=False)
             outro_snd.play()
             show_high_scores(screen, game.score)
+            outro_snd.stop()
         elif not running:
             pygame.display.quit()
             sys.exit()

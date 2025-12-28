@@ -30,7 +30,7 @@ class Enemy(pygame.sprite.Sprite):
 
         self.rect = self.image.get_rect()
         self.rect.topleft = [0, 0]
-        self.hitbox = self.rect.inflate(-60, -60)
+        self.hitbox = self.rect.inflate(-120, -120)
 
         self.frame_num = 0
         self.frame_delta = Enemy.FRAME_DELTA

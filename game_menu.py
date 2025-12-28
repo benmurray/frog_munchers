@@ -6,7 +6,14 @@ from defined_games import GameType
 from settings import asset_path
 
 
-GAME_TYPES = [('Evens', GameType.Evens), ('Odds', GameType.Odds), ('All Multiples', GameType.Multiples)]
+GAME_TYPES = [
+    ('Evens', GameType.Evens),
+    ('Odds', GameType.Odds),
+    ('All Multiples', GameType.Multiples),
+    ('Factors', GameType.Factors),
+    ('Primes', GameType.Primes),
+    ]
+
 display_menu = True
 game_selected = GameType.Evens
 

@@ -2,7 +2,7 @@ import enum
 import numpy as np
 
 
-MAX_INT = np.iinfo(int).max
+NEG_ONE = -1
 
 
 class GameType(enum.Enum):
@@ -62,7 +62,7 @@ class Game:
         self.lives = lives
 
     def is_cell_populated(self, x: int, y: int) -> bool:
-        if self.grid[y, x] == MAX_INT:
+        if self.grid[y, x] == NEG_ONE:
             return False
         else:
             return True
@@ -70,7 +70,7 @@ class Game:
     def munch_number(self, x: int, y: int) -> bool:
         """Hero eats number, so set that cell value to BOGUS Value so its not displayed"""
         self.current_value = self.grid[y, x]
-        self.grid[y, x] = MAX_INT
+        self.grid[y, x] = NEG_ONE
         # if not self.is_value_valid() or self.did_i_win():
         if self.is_value_valid():
             self.score += 5
@@ -160,7 +160,7 @@ class Odds(Game):
 
     def beat_level(self) -> bool:
         """Take a game grid and check if all values left are even"""
-        are_all_odd = np.all((self.grid[self.grid < (MAX_INT - 1)] % 2) == 0)
+        are_all_odd = np.all((self.grid[self.grid > NEG_ONE] % 2) == 0)
         return are_all_odd
 
 
@@ -195,7 +195,7 @@ class Multiples(Game):
     def beat_level(self) -> bool:
         """Take a game grid and check if all values left are even"""
         no_more_multiples = np.all(
-            (self.grid[self.grid < (MAX_INT - 1)] % self.level) != 0
+            (self.grid[self.grid > NEG_ONE] % self.level) != 0
         )
         return no_more_multiples
 
@@ -254,7 +254,7 @@ class Factors(Game):
     def beat_level(self) -> bool:
         """Take a game grid and check if all values left are even"""
         no_more_multiples = np.all(
-            ((self.level * 12) % self.grid[self.grid < (MAX_INT - 1)]) != 0
+            ((self.level * 12) % self.grid[self.grid > NEG_ONE]) != 0
         )
         return no_more_multiples
 
@@ -314,7 +314,7 @@ class Primes(Game):
 
     def beat_level(self) -> bool:
         """Take a game grid and check if all values left are odd"""
-        for value in self.grid[self.grid < (MAX_INT - 1)]:
+        for value in self.grid[self.grid > NEG_ONE]:
             if value in self.primes:
                 return False
 

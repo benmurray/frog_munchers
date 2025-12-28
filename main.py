@@ -7,7 +7,7 @@ import pygame
 from settings import asset_path
 
 from EnemyManager import EnemyManager
-from defined_games import get_game, GameType
+from defined_games import get_game, GameType, NEG_ONE
 from high_scores import show_high_scores
 from hero import Hero
 from game_menu import show_menu_screen
@@ -80,7 +80,7 @@ def draw_grid(screen: pygame.Surface, grid: Any) -> None:
     for row in range(rows):
         for col in range(cols):
             value = grid[row, col]
-            if value == sys.maxsize:
+            if value == NEG_ONE:
                 continue
             cell_surf = cell_font.render(str(value), True, WHITE)
             cell_rect = cell_surf.get_rect()

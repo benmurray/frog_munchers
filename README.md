@@ -11,7 +11,7 @@ at Farrar Elementary in Tullahoma on an Apple II.
 - Enemies spawn and roam with different behaviors based on their color and level difficulty.
 
 ## Screenshots
-- Menu screen showing the game title and play options with the hero previewed:  
+- Menu screen showing the game title and game options. Games are Evens, Odds, Multiples, Factors, and Primes:  
   ![Menu Screen](assets/images/menu_screenshot.png)
 - In-level action with the hero munching numbers while ghosts patrol the grid:  
   ![Gameplay Screen](assets/images/action_screenshot.png)

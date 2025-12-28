@@ -246,7 +246,7 @@ class Factors(Game):
         return f"Look again! {self.current_value} is not a factor of {self.level * 12}."
 
     def is_value_valid(self) -> bool:
-        if self.current_value in self.primes:
+        if self.level * 12 % self.current_value == 0:
             return True
         else:
             return False
@@ -275,7 +275,7 @@ class Factors(Game):
             while num_to_add > 0:
                 random_place = np.random.randint(0, rows * cols)
                 if grid[random_place] % level != 0:
-                    multiple_of_level = np.random.randint(1, 12) * level
+                    multiple_of_level = np.random.randint(1, 13) * level
                     grid[random_place] = multiple_of_level
                     num_to_add = num_to_add - 1
 
